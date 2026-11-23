@@ -77,6 +77,14 @@ UI 对应关系：
 - stats.evidence_passed/evidence_total → 结果页"引用验证通过率"徽章（卖点！）
 - tasks → 任务页分级卡片
 
+## preview 接口（导览结果可视化页）
+
+    GET /api/jobs/{job_id}/preview   -> text/html
+
+- 自包含单文件 HTML：架构图（悬停高亮/点击详情）、站点导览、证据代码弹窗、模块卡片、分级任务
+- 可直接用于答辩演示，页面内支持「导出 HTML」离线分享
+- 409 表示任务尚未完成
+
 ## file 接口响应
 
     {"path": "minishop/cli.py", "start": 1, "end": 15, "total_lines": 17,
