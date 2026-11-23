@@ -47,8 +47,20 @@
     ..\.venv\Scripts\python.exe tests\smoke_test.py
 
     # 4. 启动 API 服务
-    ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
-    # 打开 http://localhost:8000/docs 可视化调试所有接口
+    ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8765
+    # 打开 http://127.0.0.1:8765/docs 可视化调试所有接口
+
+## 快速开始（前端）
+
+    cd frontend
+    npm install --registry=https://registry.npmmirror.com
+    npm run dev          # http://localhost:5173
+    npm run build        # 类型检查 + 生产构建
+
+后端不在 8765 时：`$env:VITE_API_TARGET="http://127.0.0.1:8000"; npm run dev`。
+前端已实现：首页（SSE 流水线）、导览三栏联动、架构图、模块卡片、分级任务、代码证据面板。
+
+> 注：本机 8000 端口被系统进程占用，统一用 8765；前端代理默认指向它。
 
 ## mock / live 两种模式
 
@@ -61,9 +73,16 @@
 
 - **A（后端/流水线）**：Fetch/Scan/Rank + 证据校验器 + LLM 四遍调用 + SQLite 缓存 —— 本目录 backend/
 - **B（前端/导览 UI）**：React + React Flow 三栏联动导览页 —— frontend/，按 docs/API.md 对接
+  （Vite 基座与四个页签已完成，队友 `Fpx0325` 在其上迭代）
+
+协作仓库：https://github.com/ccczzz12112/repotour （私有，A 为 admin，B 为 write）
+
 
 ## 文档
 
 - docs/design.md —— 完整设计方案（参赛文档底稿）
 - docs/API.md —— 前后端接口契约（B 必读）
 - docs/GIT-COLLAB.md —— GitHub 建仓与多人协作指南
+
+
+

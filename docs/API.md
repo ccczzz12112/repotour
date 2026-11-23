@@ -1,6 +1,6 @@
 # RepoTour API 契约（前端对接文档）
 
-Base URL: http://localhost:8000 ，所有响应均为 JSON（SSE 除外）。CORS 已全开。
+Base URL: http://127.0.0.1:8765 （本机 8000 被占用；换端口只需改启动参数和前端代理）。所有响应均为 JSON（SSE 除外）。CORS 已全开。
 
 ## 接口总览
 
@@ -94,7 +94,7 @@ UI 对应关系：
 
     export default defineConfig({
       server: {
-        proxy: { "/api": "http://localhost:8000" }
+        proxy: { "/api": "http://127.0.0.1:8765" }
       }
     })
 
@@ -103,3 +103,4 @@ UI 对应关系：
 - 400 参数非法（空 URL / 路径穿越）
 - 404 job 或文件不存在
 - 409 结果未就绪（轮询状态或监听 SSE 后再取）
+
