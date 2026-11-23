@@ -7,9 +7,9 @@ import uuid
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
-from . import config, db, events, runner
+from . import config, db, events, preview, runner
 from .evidence import safe_rel
 
 app = FastAPI(title="RepoTour API", version="0.1.0")
@@ -121,3 +121,14 @@ def job_file(job_id: str, path: str, start: int = 1, end: int = 0):
     e = min(n, end if end >= s else s + 199)
     return {"path": rel, "start": s, "end": e, "total_lines": n,
             "lines": [{"n": i, "text": lines[i - 1]} for i in range(s, e + 1)]}
+
+@app.get("/api/jobs/{job_id}/preview", response_class=HTMLResponse)
+def job_preview(job_id: str):
+    """导览结果一键渲染为可分享的静态 HTML 页面（答辩演示 / 导出）。"""
+    job = db.get_job(job_id)
+    if not job:
+        raise HTTPException(404, "job 不存在")
+    page = preview.build_html(job_id)
+    if page is None:
+        raise HTTPException(409, f"尚未完成（当前状态: {job['status']}）")
+    return HTMLResponse(page)

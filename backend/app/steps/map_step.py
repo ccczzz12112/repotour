@@ -6,17 +6,23 @@ from pathlib import Path
 from .. import config, llm
 from ..evidence import filter_valid, first_lines
 
-ROLE_HINTS = (("test", "test"), ("model", "data"), ("storage", "data"), ("db", "data"),
-              ("dao", "data"), ("util", "util"), ("helper", "util"), ("common", "util"),
-              ("cli", "entry"), ("main", "entry"), ("app", "entry"),
-              ("api", "api"), ("route", "api"), ("view", "api"))
-
-
 def _guess_role(path):
-    low = path.lower()
-    for key, role in ROLE_HINTS:
-        if key in low:
-            return role
+    """按文件名与目录段判定角色（避免 click 这种包名里含 cli 被误判为入口）。"""
+    p = Path(path)
+    stem = p.stem.lower()
+    parts = [x.lower() for x in p.parts[:-1]]
+    if stem.startswith("test_") or stem.endswith(("_test", "_tests")) or "tests" in parts or "test" in parts:
+        return "test"
+    if stem in ("__main__", "main", "cli", "app", "run", "manage", "server", "wsgi", "asgi", "__init__"):
+        return "entry"
+    if any(k in stem for k in ("model", "schema", "entity", "storage", "db", "dao", "repository")):
+        return "data"
+    if any(k in stem for k in ("util", "helper", "common", "compat", "converter", "format")):
+        return "util"
+    if any(k in stem for k in ("api", "route", "view", "handler", "endpoint", "middleware")):
+        return "api"
+    if any(k in stem for k in ("config", "settings", "constants", "options")):
+        return "util"
     return "core"
 
 
@@ -33,7 +39,13 @@ def _docstring(text, path):
 def _fallback(payload):
     path, symbols = payload["path"], payload["symbols"]
     doc = (payload.get("doc") or "").strip()
-    resp = doc.splitlines()[0][:60] if doc else f"{Path(path).stem} 模块，含 {len(symbols)} 个顶层符号"
+    flat = " ".join(doc.split())
+    if flat:
+        resp = flat.split("。")[0]
+        if len(resp) > 70:
+            resp = resp[:70].rsplit(" ", 1)[0] + "…"
+    else:
+        resp = f"{Path(path).stem} 模块，含 {len(symbols)} 个顶层符号"
     ev = payload.get("first_symbol_ev") or payload.get("head_ev")
     return {"role": _guess_role(path), "responsibility": resp,
             "key_symbols": symbols[:6], "evidence": [ev] if ev else []}
