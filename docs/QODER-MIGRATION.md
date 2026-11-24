@@ -30,7 +30,7 @@
 ## 2. 环境状态（已核查）
 
 - Qoder CN 桌面端 **v0.5.14 已安装**：`C:\Users\才\AppData\Local\Programs\Qoder CN\Qoder CN.exe`
-- **未登录**（`.qoder-cn\.qoder-app-status.json` 里 `logged_in: false`）→ 你要做的第一件事
+- **已登录**：账号 `nick1879703847`，UID `01a1ed6b-5498-7a8d-af26-216ef4b68ed1`（2026-11-24 09:29 核实）
 - 未装 Qoder CLI；桌面端自带「站点」功能，新手直接用桌面端即可
 - ⚠️ **Sites 个人 Free 版只支持静态网页，无数据库/存储**。必须先用学生券换到 **Pro**，
   否则 P4 在线生成做不了。领券下单步骤见 SUBMISSION-CHECKLIST 第 4 节。

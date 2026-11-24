@@ -68,7 +68,9 @@ README 只讲怎么安装，不讲怎么读。想知道「主流程从哪进、�
 
 ## 五、用 Qoder 做出来的过程
 
-**Qoder 账号 UID**：【在 <https://qoder.cn/account/profile> 查看后填写】
+**Qoder 账号**：`nick1879703847`
+**Qoder 账号 UID**：`01a1ed6b-5498-7a8d-af26-216ef4b68ed1`
+（UID 由本机登录态推得，发布前请到 <https://qoder.cn/account/profile> 核对一次）
 **使用版本**：Qoder CN 桌面端 v0.5.14，个人专业版 Pro（学生权益）
 
 【如实写。参考结构：】
