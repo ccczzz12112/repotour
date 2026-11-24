@@ -3,7 +3,7 @@
   "repo_url": "https://github.com/pallets/click",
   "commit": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
   "generated_by": "RepoTour pipeline (LLM_MODE=mock)",
-  "note": "文案为规则生成的占位内容，站点版需由 Qoder 侧模型重写；结构与证据行号真实有效。",
+  "note": "文案已由 Qoder 侧模型基于 files 字典中的真实代码重写；结构、依赖边与证据行号保持原样，未作改动。",
   "file_count": 91,
   "missing": []
  },
@@ -60,7 +60,7 @@
      "paths": [
       "docs/conf.py"
      ],
-     "note": ""
+     "note": "文档构建配置目录，只影响 Sphinx 出文档，不参与运行时。"
     },
     {
      "id": "examples/aliases",
@@ -70,7 +70,7 @@
      "paths": [
       "examples/aliases/aliases.py"
      ],
-     "note": ""
+     "note": "演示命令别名与前缀匹配的独立示例。"
     },
     {
      "id": "examples/colors",
@@ -80,7 +80,7 @@
      "paths": [
       "examples/colors/colors.py"
      ],
-     "note": ""
+     "note": "演示 ANSI 颜色输出与自动去色的示例。"
     },
     {
      "id": "examples/completion",
@@ -90,7 +90,7 @@
      "paths": [
       "examples/completion/completion.py"
      ],
-     "note": ""
+     "note": "演示 shell 补全候选来源的示例。"
     },
     {
      "id": "examples/complex/complex",
@@ -101,7 +101,7 @@
       "examples/complex/complex/__init__.py",
       "examples/complex/complex/cli.py"
      ],
-     "note": ""
+     "note": "复杂示例的入口包：自定义 Group 从目录懒加载子命令。"
     },
     {
      "id": "examples/complex/complex/commands",
@@ -113,7 +113,7 @@
       "examples/complex/complex/commands/cmd_init.py",
       "examples/complex/complex/commands/cmd_status.py"
      ],
-     "note": ""
+     "note": "复杂示例的子命令目录，一个文件就是一条命令。"
     },
     {
      "id": "examples/imagepipe",
@@ -123,7 +123,7 @@
      "paths": [
       "examples/imagepipe/imagepipe.py"
      ],
-     "note": ""
+     "note": "演示 chain 模式下多命令管道协作的示例。"
     },
     {
      "id": "examples/inout",
@@ -133,7 +133,7 @@
      "paths": [
       "examples/inout/inout.py"
      ],
-     "note": ""
+     "note": "演示文件与标准流读写的示例。"
     },
     {
      "id": "examples/naval",
@@ -143,7 +143,7 @@
      "paths": [
       "examples/naval/naval.py"
      ],
-     "note": ""
+     "note": "演示多层嵌套命令组的示例。"
     },
     {
      "id": "examples/repo",
@@ -153,7 +153,7 @@
      "paths": [
       "examples/repo/repo.py"
      ],
-     "note": ""
+     "note": "演示命令之间共享状态对象的示例。"
     },
     {
      "id": "examples/termui",
@@ -163,7 +163,7 @@
      "paths": [
       "examples/termui/termui.py"
      ],
-     "note": ""
+     "note": "演示终端交互控件的示例。"
     },
     {
      "id": "examples/validation",
@@ -173,7 +173,7 @@
      "paths": [
       "examples/validation/validation.py"
      ],
-     "note": ""
+     "note": "演示参数校验与自定义类型的示例。"
     },
     {
      "id": "src/click",
@@ -199,7 +199,7 @@
       "src/click/types.py",
       "src/click/utils.py"
      ],
-     "note": ""
+     "note": "库本体：从装饰器入口到解析、类型、输出兼容的完整实现。"
     },
     {
      "id": "tests",
@@ -230,7 +230,7 @@
       "tests/test_termui.py",
       "tests/test_testing.py"
      ],
-     "note": ""
+     "note": "pytest 用例与 runner fixture，覆盖命令行为与输出。"
     },
     {
      "id": "tests/test_exceptions",
@@ -241,7 +241,7 @@
       "tests/test_exceptions/__init__.py",
       "tests/test_exceptions/test_FileError.py"
      ],
-     "note": ""
+     "note": "针对异常类型与报错文案的专项用例。"
     },
     {
      "id": "tests/test_types",
@@ -259,7 +259,7 @@
       "tests/test_types/test_ParamType.py",
       "tests/test_types/test_Path.py"
      ],
-     "note": ""
+     "note": "针对各参数类型转换与边界值的专项用例。"
     },
     {
      "id": "tests/test_utils",
@@ -282,7 +282,7 @@
       "tests/test_utils/test_sentinel.py",
       "tests/test_utils/test_style.py"
      ],
-     "note": ""
+     "note": "针对 echo、prompt、文件工具等工具函数的用例。"
     },
     {
      "id": "tests/typing",
@@ -303,7 +303,7 @@
       "tests/typing/typing_simple_example.py",
       "tests/typing/typing_version_option.py"
      ],
-     "note": ""
+     "note": "只做类型检查的样例，验证注解对编辑器友好。"
     }
    ],
    "edges": [
@@ -431,8 +431,8 @@
   "tour": [
    {
     "title": "第0站 · 全景与入口",
-    "narrative": "Click is a Python package for creating beautiful command line interfaces in a composable way with as little code as necessary. 全仓共 91 个源码文件、167 条模块依赖边。",
-    "why": "读细节之前，先建立全局地图。",
+    "narrative": "先搭地图：命令回调由核心层执行，回调里的输出函数又要向本文件讨一个能安全写字的流，本站证据就是这条链的最底端。_make_text_stream 收到二进制流，编码为空时交给 get_best_encoding 去猜，探测到 ascii 就换成 utf-8，出错策略默认替换而不是抛异常，最后包成 _NonClosingTextIOWrapper 并打开行缓冲。它解决的问题是：各平台、各种重定向下编码与关闭行为都不同，上层不想操心。重点看三处：默认参数、编码兜底、以及这个包装类为什么不许关流。",
+    "why": "第一站不看命令怎么写，而看所有输出最终流向哪里：先认清底座，后面读 echo 和 core 才不会悬空。",
     "files": [
      {
       "path": "src/click/_compat.py",
@@ -441,13 +441,13 @@
       "symbol": "_make_text_stream"
      }
     ],
-    "quiz": "这个仓库解决什么问题？",
+    "quiz": "_make_text_stream 在 encoding 为 None 时怎么决定编码？如果探测结果是 ascii，最终会用哪个编码？",
     "order": 1
    },
    {
     "title": "第1站 · decorators.py",
-    "narrative": "decorators 模块，含 22 个顶层符号；重点看 passcontext、passobj、makepassdecorator。",
-    "why": "这是程序的入口，所有能力都从这里串起来。",
+    "narrative": "这一站从你真正会敲的第一行代码开始：给函数加一个装饰器。本文件坐在核心层之上，是把普通函数变成命令回调的胶水，自己不解析参数。证据里的 pass_context 只做一件事：定义内层 new_func，调用时先取当前上下文，再把它塞到参数最前面交给原函数，最后用 update_wrapper 保住函数名和文档。紧跟着的 pass_obj 是同一套路的变体，只传上下文里挂的那个共享对象。它解决的问题是：回调想拿到上下文或共享状态，又不必层层显式传参。重点看这几个符号如何配合。",
+    "why": "上一站知道了输出往哪去，这一站回到入口：先看清装饰器怎么把上下文喂给你的函数，再去 core.py 追上下文从哪来。",
     "files": [
      {
       "path": "src/click/decorators.py",
@@ -456,13 +456,13 @@
       "symbol": "pass_context"
      }
     ],
-    "quiz": "pass_context 在 src/click/decorators.py 中的作用是什么？",
+    "quiz": "pass_context 和 pass_obj 传给回调的第一个参数分别是什么？为什么两者都要用 update_wrapper 包一层？",
     "order": 2
    },
    {
     "title": "第2站 · core.py",
-    "narrative": "core 模块，含 22 个顶层符号；重点看 completevisiblecommands、checknestedchain、echoaborted。",
-    "why": "它被 decorators.py 直接导入，是这条调用链上的第 1 跳。",
+    "narrative": "核心层是全仓最重的文件，命令、命令组、上下文、参数对象都住在这里，装饰器只是它的门面。别从头读，先看这段小而完整的 _complete_visible_commands：它把当前上下文里的命令断言成命令组，用 list_commands 列出子命令名，按用户已输入的前缀过滤，再用 get_command 取回命令对象，跳过隐藏项。这十几行把命令组的核心契约演示完了：组只负责列名字和按名字取命令，真正的解析与执行在命令对象里。它解决的问题是子命令的懒加载与补全。重点看这对方法怎么分工。",
+    "why": "装饰器把上下文交到你手里之后，该问命令对象长什么样了；用补全这个小函数切入 core.py，比直接啃四千行省力得多。",
     "files": [
      {
       "path": "src/click/core.py",
@@ -471,13 +471,13 @@
       "symbol": "_complete_visible_commands"
      }
     ],
-    "quiz": "_complete_visible_commands 在 src/click/core.py 中的作用是什么？",
+    "quiz": "_complete_visible_commands 为什么分成 list_commands 和 get_command 两步，而不是一次返回所有命令对象？",
     "order": 3
    },
    {
     "title": "第3站 · utils.py",
-    "narrative": "utils 模块，含 16 个顶层符号；重点看 posixify、safecall、makestr。",
-    "why": "它被 core.py 直接导入，是这条调用链上的第 2 跳。",
+    "narrative": "工具层夹在核心层与兼容层之间：输出、开文件、找配置目录的函数都住这里，核心层顶部的引入区就依赖它。证据这段是两个极小的私有函数：_posixify 把名字按空白切开、转小写、用连字符拼回，用来把程序名变成规范的目录名；_safecall 用内层 wrapper 把函数包住，任何普通异常都吞掉并返回空值，再保留原函数的元信息。它解决的问题是：探测类操作不该让主流程崩掉，比如猜终端宽度、读环境变量。注意它只捕获 Exception，键盘中断照样往上抛。顺手看一眼下面的 make_str 怎么处理字节串。",
+    "why": "读完 core 的契约，再看它天天调用的工具层：知道 echo 这类能力从哪来，才不会把平台细节误当成核心逻辑。",
     "files": [
      {
       "path": "src/click/utils.py",
@@ -486,13 +486,13 @@
       "symbol": "_posixify"
      }
     ],
-    "quiz": "_posixify 在 src/click/utils.py 中的作用是什么？",
+    "quiz": "_safecall 包装后的函数抛 ValueError 时返回什么？抛 KeyboardInterrupt 时又会怎样？",
     "order": 4
    },
    {
     "title": "第4站 · _compat.py",
-    "narrative": "compat 模块，含 30 个顶层符号；重点看 maketextstream、isasciiencoding、getbestencoding。",
-    "why": "它被 utils.py 直接导入，是这条调用链上的第 3 跳。",
+    "narrative": "回到兼容层，这次读细节而不是位置。同一个 _make_text_stream，注意四个决定行为的参数：编码为空走探测；出错策略默认替换，无法编码的字符被换掉而不是报错；行缓冲打开，保证每行立刻可见；另两个强制读写标记用来对付重定向后认不出方向的流。往下看 _NonClosingTextIOWrapper 与 _FixupStream：前者挡住关闭动作，免得把标准输出关掉；后者补齐缺失的流属性。这一层解决的问题是让上层永远拿到一个能写、不会误关、编码合理的文本流。重点看出错策略的默认值和两个包装类的分工。",
+    "why": "第0站只把这里当底座认了个脸；现在你见过 echo 和 core 的用法，回头读参数默认值，才知道每个兜底为什么存在。",
     "files": [
      {
       "path": "src/click/_compat.py",
@@ -501,13 +501,13 @@
       "symbol": "_make_text_stream"
      }
     ],
-    "quiz": "_make_text_stream 在 src/click/_compat.py 中的作用是什么？",
+    "quiz": "errors 默认取 replace 而不是 strict，对命令行输出意味着什么？_NonClosingTextIOWrapper 拦住的是哪个操作？",
     "order": 5
    },
    {
     "title": "第5站 · _winconsole.py",
-    "narrative": "winconsole 模块，含 9 个顶层符号；重点看 WindowsConsoleRawIOBase、WindowsConsoleReader、WindowsConsoleWriter。",
-    "why": "它被 compat.py 直接导入，是这条调用链上的第 4 跳。",
+    "narrative": "兼容层在 Windows 上会转交给本文件，因为老式控制台不能直接按 UTF-8 写字节。这段证据是最底层的胶水：Py_buffer 是一个 ctypes 结构体，逐字段声明缓冲区协议里的地址、长度、只读标记等成员；有了它，get_buffer 才能向解释器要到字节串的真实内存地址，用完再释放。上层读写类就靠这块内存把 UTF-16 数据喂给控制台接口。它解决的问题是跨语言边界安全传缓冲区。重点看字段声明、get_buffer 里的释放时机，以及取不到解释器接口时把它置空的退路。",
+    "why": "上一站的兜底在 Windows 上要落到真实 API，这一站跟着看最脏的一层：知道 ctypes 边界在哪，遇到乱码才知道从哪查。",
     "files": [
      {
       "path": "src/click/_winconsole.py",
@@ -516,13 +516,13 @@
       "symbol": "_WindowsConsoleRawIOBase"
      }
     ],
-    "quiz": "_WindowsConsoleRawIOBase 在 src/click/_winconsole.py 中的作用是什么？",
+    "quiz": "get_buffer 为什么必须把 PyBuffer_Release 放进 finally？在 PyPy 上导入 pythonapi 失败时 get_buffer 变成什么？",
     "order": 6
    },
    {
     "title": "第6站 · __init__.py",
-    "narrative": "Click is a simple Python module inspired by the stdlib optparse to…；重点看 getattr。",
-    "why": "按依赖中心度入选：被 63 个文件引用。",
+    "narrative": "本文件是包的公开门面：前面几十行把各子模块的名字一次性摊平，所以引入这个包就能直接拿到命令、命令组和输出函数。证据这段是模块级 __getattr__，只有属性找不到时才会被调用：名字是旧类名时，临时从核心层引入对应的私有类，先发一条弃用警告，再把它返回；另外两个旧名同理。它解决的问题是改名之后老代码仍能跑，同时给出明确迁移提示，还不必在导入时就加载这些兼容类。重点看触发时机、警告里的 stacklevel 参数，以及私有名与公开名的对应关系。",
+    "why": "前面几站读的都是内部实现，这一站回到包的边界：分清哪些名字是对外承诺、哪些只是历史包袱，才知道自己该用哪个 API。",
     "files": [
      {
       "path": "src/click/__init__.py",
@@ -531,13 +531,13 @@
       "symbol": "__getattr__"
      }
     ],
-    "quiz": "__getattr__ 在 src/click/__init__.py 中的作用是什么？",
+    "quiz": "访问 click.BaseCommand 时 __getattr__ 返回的真实类名是什么？warnings.warn 里 stacklevel=2 起什么作用？",
     "order": 7
    },
    {
     "title": "第7站 · globals.py",
-    "narrative": "globals 模块，含 6 个顶层符号；重点看 getcurrentcontext、getcurrentcontext、getcurrentcontext。",
-    "why": "按依赖中心度入选：被 6 个文件引用。",
+    "narrative": "本文件只有六十来行，却是隐式传参的心脏，第一站那个装饰器调的就是这里的 get_current_context。顶部的线程局部对象意味着每个线程各有一份上下文栈；函数取栈顶，栈不存在或为空时捕获异常，默认抛出运行时错误，传 silent=True 则返回空值。上面两个重载声明只是类型提示，运行时不执行。配套的 push_context 与 pop_context 负责入栈出栈，上下文的作用域方法用的正是它们。它解决的问题是：输出这类工具不必被显式传入上下文，也能知道当前颜色与终端设置。重点看栈顶取值和 silent 分支。",
+    "why": "装饰器和门面都看过之后，回到这个最小的文件收网：上下文如何存放，是前面所有隐式行为的唯一答案。",
     "files": [
      {
       "path": "src/click/globals.py",
@@ -546,13 +546,13 @@
       "symbol": "get_current_context"
      }
     ],
-    "quiz": "get_current_context 在 src/click/globals.py 中的作用是什么？",
+    "quiz": "没有激活上下文时，get_current_context() 与 get_current_context(silent=True) 的结果分别是什么？为什么用 threading.local？",
     "order": 8
    },
    {
     "title": "第8站 · exceptions.py",
-    "narrative": "exceptions 模块，含 14 个顶层符号；重点看 joinparamhints、formatpossibilities、ClickException。",
-    "why": "按依赖中心度入选：被 9 个文件引用。",
+    "narrative": "本文件决定命令失败时用户看到什么。证据里两个私有函数是报错文案的排版工：一个把多个参数提示用斜杠连起来，每个都加上引号；另一个把候选值排序后交给单复数模板，生成「你是不是想输入……」这样的追问。往下就是骨架：ClickException 带着退出码 1，构造时先把颜色设置缓存下来，因为真正打印时上下文已经退栈；show 方法通过输出函数写到标准错误；UsageError 继承它并额外打印用法。它解决的问题是把异常变成人类可读、可本地化的提示。重点看构造函数里缓存颜色那行。",
+    "why": "读完正常路径，最后补上失败路径：知道错误怎么被格式化和打印，才能解释参数写错时终端为什么会出现用法提示。",
     "files": [
      {
       "path": "src/click/exceptions.py",
@@ -561,13 +561,13 @@
       "symbol": "_join_param_hints"
      }
     ],
-    "quiz": "_join_param_hints 在 src/click/exceptions.py 中的作用是什么？",
+    "quiz": "ClickException 为什么要在 __init__ 里就存下 show_color，而不是等 show() 时再查当前上下文？",
     "order": 9
    },
    {
     "title": "最后一站 · 测试与质量",
-    "narrative": "全仓共 59 个测试文件；先跑通它们，再动手改代码，是验证理解最可靠的方式。",
-    "why": "测试是可执行的文档。",
+    "narrative": "最后一站落在测试上。本文件只有八行：引入 pytest，从测试工具模块拿来 CliRunner，再用 fixture 装饰器定义 runner，让每个测试函数都拿到全新实例。作用域设为 function 是关键——这个运行器会替换标准输入输出，共享一个实例会让用例互相污染。它内部把输入输出换成内存流，于是不起子进程也能跑完整条命令并拿到输出和退出码。这一站解决的问题是：你改完代码怎么验证。重点看 fixture 的作用域参数，以及为什么每个用例都要一个新运行器。",
+    "why": "九站读完实现，最后给你一个能立刻动手的支点：有了 runner，前面每个符号的行为都能用一条测试当场验证。",
     "files": [
      {
       "path": "tests/conftest.py",
@@ -575,7 +575,7 @@
       "end": 8
      }
     ],
-    "quiz": "哪个测试覆盖了核心模块？",
+    "quiz": "把 runner 的 scope 改成 session 会带来什么风险？CliRunner 为什么不需要真的开一个终端？",
     "order": 10
    }
   ],
@@ -583,39 +583,42 @@
    {
     "level": 1,
     "title": "找到入口与启动流程",
-    "description": "打开 src/click/decorators.py，列出它导入的前 3 个内部模块。",
+    "description": "打开 src/click/decorators.py 的 import 区，写出它从 click 内部引入的至少 3 个模块；再顺着 pass_context 找到 get_current_context 的定义文件，用一句话讲清「用户函数 → 当前上下文」这条链。",
     "files": [
      "src/click/decorators.py"
     ],
-    "acceptance": "能口头说出启动流程与对应文件",
+    "acceptance": "能说出 decorators.py 依赖 core.py 与 globals.py，并指出 pass_context 在 decorators.py 第 24 行、get_current_context 的实现在 globals.py 第 20 行。",
     "hints": [
-     "看 import 区"
+     "先看文件顶部 from .core import … 与 from .globals import … 两段。",
+     "pass_context 内层 new_func 的第一个实参就是答案，顺着它跳到 globals.py。"
     ]
    },
    {
     "level": 2,
     "title": "画出一条调用链",
-    "description": "从 src/click/decorators.py 出发，画出到 src/click/_winconsole.py 的依赖路径。",
+    "description": "从 src/click/decorators.py 的 import 区出发，手工追出通往 src/click/_winconsole.py 的引入链（decorators → utils → _compat → _winconsole），写出每一跳引入的具体符号，并在架构图页确认这两个文件同属 src/click 节点。",
     "files": [
      "src/click/decorators.py",
      "src/click/_winconsole.py"
     ],
-    "acceptance": "路径与真实 import 关系一致",
+    "acceptance": "四跳都能在 import 区找到对应语句，并指出 _compat.py 第 517–518 行只在 Windows 平台才引入 _winconsole。",
     "hints": [
-     "用架构图核对"
+     "decorators.py 顶部的 from .utils import echo 是第一跳。",
+     "在 _compat.py 里搜 _winconsole，注意它写在 if sys.platform.startswith(\"win\") 分支内。"
     ]
    },
    {
     "level": 3,
     "title": "为核心模块补一条测试",
-    "description": "为 src/click/_winconsole.py 中的一个函数补充边界用例，加到 tests/conftest.py。",
+    "description": "给 src/click/_winconsole.py 中可跨平台测试的逻辑补一条边界用例，例如 _WindowsConsoleReader.readinto 拒绝奇数字节；新建 tests/test_winconsole_extra.py，参考 tests/conftest.py 里 runner fixture 的写法组织测试，然后跑 pytest 确认全绿。",
     "files": [
      "src/click/_winconsole.py",
      "tests/conftest.py"
     ],
-    "acceptance": "运行 pytest 全部通过",
+    "acceptance": "新用例在非 Windows 环境也能运行通过，故意改坏被测逻辑时它会失败，且 pytest 全量没有新增失败。",
     "hints": [
-     "先跑通现有测试确认环境"
+     "先原样跑一次 pytest，确认环境可用再动手。",
+     "readinto 的奇数字节校验发生在真正读控制台之前，所以不需要真实 Windows 句柄。"
     ]
    }
   ],
@@ -623,7 +626,7 @@
    {
     "path": "src/click/_compat.py",
     "role": "util",
-    "responsibility": "_compat 模块，含 30 个顶层符号",
+    "responsibility": "统一各平台文本流的编码与关闭行为，兜底标准输入输出",
     "key_symbols": [
      "_make_text_stream",
      "is_ascii_encoding",
@@ -645,7 +648,7 @@
    {
     "path": "src/click/_winconsole.py",
     "role": "core",
-    "responsibility": "_winconsole 模块，含 9 个顶层符号",
+    "responsibility": "用 ctypes 直连 Windows 控制台，读写 UTF-16 流",
     "key_symbols": [
      "_WindowsConsoleRawIOBase",
      "_WindowsConsoleReader",
@@ -667,7 +670,7 @@
    {
     "path": "src/click/core.py",
     "role": "core",
-    "responsibility": "core 模块，含 22 个顶层符号",
+    "responsibility": "命令、参数、上下文的核心对象模型与解析执行流程",
     "key_symbols": [
      "_complete_visible_commands",
      "_check_nested_chain",
@@ -689,7 +692,7 @@
    {
     "path": "src/click/decorators.py",
     "role": "core",
-    "responsibility": "decorators 模块，含 22 个顶层符号",
+    "responsibility": "把普通函数包装成命令和回调的装饰器入口",
     "key_symbols": [
      "pass_context",
      "pass_obj",
@@ -711,7 +714,7 @@
    {
     "path": "src/click/__init__.py",
     "role": "entry",
-    "responsibility": "Click is a simple Python module inspired by the stdlib optparse to…",
+    "responsibility": "包的公开 API 门面，兼管旧名字的弃用警告",
     "key_symbols": [
      "__getattr__"
     ],
@@ -728,7 +731,7 @@
    {
     "path": "src/click/utils.py",
     "role": "util",
-    "responsibility": "utils 模块，含 16 个顶层符号",
+    "responsibility": "echo、文件与路径等通用工具，衔接核心与兼容层",
     "key_symbols": [
      "_posixify",
      "_safecall",
@@ -750,7 +753,7 @@
    {
     "path": "src/click/globals.py",
     "role": "core",
-    "responsibility": "globals 模块，含 6 个顶层符号",
+    "responsibility": "线程局部的上下文栈，支撑隐式获取当前 Context",
     "key_symbols": [
      "get_current_context",
      "get_current_context",
@@ -772,7 +775,7 @@
    {
     "path": "src/click/exceptions.py",
     "role": "core",
-    "responsibility": "exceptions 模块，含 14 个顶层符号",
+    "responsibility": "定义可展示的异常体系与错误提示文案",
     "key_symbols": [
      "_join_param_hints",
      "_format_possibilities",
@@ -794,7 +797,7 @@
    {
     "path": "examples/complex/complex/cli.py",
     "role": "entry",
-    "responsibility": "cli 模块，含 3 个顶层符号",
+    "responsibility": "复杂示例入口：自定义 Group 按目录懒加载子命令",
     "key_symbols": [
      "Environment",
      "ComplexCLI",
@@ -813,7 +816,7 @@
    {
     "path": "src/click/shell_completion.py",
     "role": "core",
-    "responsibility": "shell_completion 模块，含 20 个顶层符号",
+    "responsibility": "生成 Bash、Zsh、Fish 的补全脚本与候选项",
     "key_symbols": [
      "shell_complete",
      "CompletionItem",
@@ -835,7 +838,7 @@
    {
     "path": "src/click/parser.py",
     "role": "core",
-    "responsibility": "This module started out as largely a copy paste from the stdlib's…",
+    "responsibility": "把 argv 切分并解析成选项与参数的底层解析器",
     "key_symbols": [
      "_unpack_args",
      "_split_opt",
@@ -857,7 +860,7 @@
    {
     "path": "src/click/types.py",
     "role": "core",
-    "responsibility": "types 模块，含 33 个顶层符号",
+    "responsibility": "参数类型体系：校验字符串并转成目标值",
     "key_symbols": [
      "ParamTypeInfoDict",
      "ParamType",
@@ -879,7 +882,7 @@
    {
     "path": "src/click/termui.py",
     "role": "core",
-    "responsibility": "termui 模块，含 27 个顶层符号",
+    "responsibility": "prompt、confirm、进度条等终端交互的封装",
     "key_symbols": [
      "_mask_hidden_input",
      "hidden_prompt_func",
@@ -901,7 +904,7 @@
    {
     "path": "src/click/formatting.py",
     "role": "util",
-    "responsibility": "formatting 模块，含 5 个顶层符号",
+    "responsibility": "帮助文本的表格测量、换行与排版",
     "key_symbols": [
      "measure_table",
      "iter_rows",
@@ -922,7 +925,7 @@
    {
     "path": "src/click/_utils.py",
     "role": "util",
-    "responsibility": "_utils 模块，含 1 个顶层符号",
+    "responsibility": "Sentinel 枚举，用来区分未传参与 None",
     "key_symbols": [
      "Sentinel"
     ],
@@ -939,7 +942,7 @@
    {
     "path": "src/click/_textwrap.py",
     "role": "core",
-    "responsibility": "_textwrap 模块，含 1 个顶层符号",
+    "responsibility": "按可见宽度换行的 TextWrapper，忽略 ANSI 码",
     "key_symbols": [
      "TextWrapper"
     ],
@@ -956,7 +959,7 @@
    {
     "path": "src/click/_termui_impl.py",
     "role": "core",
-    "responsibility": "This module contains implementations for the termui module. To keep…",
+    "responsibility": "进度条与分页器的具体实现，隔离平台细节",
     "key_symbols": [
      "ProgressBar",
      "_PagerWriter",
@@ -978,7 +981,7 @@
    {
     "path": "src/click/testing.py",
     "role": "core",
-    "responsibility": "testing 模块，含 9 个顶层符号",
+    "responsibility": "CliRunner 与内存流替换，支撑无终端测试",
     "key_symbols": [
      "EchoingStdin",
      "_pause_echo",
@@ -1000,7 +1003,7 @@
    {
     "path": "examples/imagepipe/imagepipe.py",
     "role": "core",
-    "responsibility": "imagepipe 模块，含 18 个顶层符号",
+    "responsibility": "链式管道示例：多个子命令串联处理图片",
     "key_symbols": [
      "cli",
      "process_commands",
@@ -1022,7 +1025,7 @@
    {
     "path": "examples/repo/repo.py",
     "role": "core",
-    "responsibility": "repo 模块，含 7 个顶层符号",
+    "responsibility": "多命令共享状态的示例：模拟版本库操作",
     "key_symbols": [
      "Repo",
      "cli",
@@ -1044,7 +1047,7 @@
    {
     "path": "examples/termui/termui.py",
     "role": "core",
-    "responsibility": "termui 模块，含 10 个顶层符号",
+    "responsibility": "演示颜色、分页、进度条等终端 UI 能力",
     "key_symbols": [
      "cli",
      "colordemo",
@@ -1066,7 +1069,7 @@
    {
     "path": "examples/aliases/aliases.py",
     "role": "core",
-    "responsibility": "aliases 模块，含 10 个顶层符号",
+    "responsibility": "AliasedGroup 示例：按前缀匹配命令别名",
     "key_symbols": [
      "Config",
      "AliasedGroup",
@@ -1088,7 +1091,7 @@
    {
     "path": "docs/conf.py",
     "role": "core",
-    "responsibility": "conf 模块，含 0 个顶层符号",
+    "responsibility": "Sphinx 文档构建配置，不参与运行时",
     "key_symbols": [],
     "importance": 0.00624,
     "evidence": [
@@ -1102,7 +1105,7 @@
    {
     "path": "examples/naval/naval.py",
     "role": "core",
-    "responsibility": "naval 模块，含 8 个顶层符号",
+    "responsibility": "Naval Fate 示例：多层嵌套的命令组",
     "key_symbols": [
      "cli",
      "ship",
@@ -1124,7 +1127,7 @@
    {
     "path": "examples/validation/validation.py",
     "role": "core",
-    "responsibility": "validation 模块，含 3 个顶层符号",
+    "responsibility": "自定义校验示例：回调校验与自定义参数类型",
     "key_symbols": [
      "validate_count",
      "URL",
@@ -1143,7 +1146,7 @@
    {
     "path": "examples/completion/completion.py",
     "role": "core",
-    "responsibility": "completion 模块，含 7 个顶层符号",
+    "responsibility": "补全示例：环境变量与用户名作为候选来源",
     "key_symbols": [
      "cli",
      "ls",
@@ -1165,7 +1168,7 @@
    {
     "path": "examples/colors/colors.py",
     "role": "core",
-    "responsibility": "colors 模块，含 1 个顶层符号",
+    "responsibility": "颜色输出示例：重定向时自动去掉 ANSI 码",
     "key_symbols": [
      "cli"
     ],
@@ -1182,7 +1185,7 @@
    {
     "path": "examples/inout/inout.py",
     "role": "core",
-    "responsibility": "inout 模块，含 1 个顶层符号",
+    "responsibility": "文件输入输出示例：cat 式的流处理",
     "key_symbols": [
      "cli"
     ],
@@ -1199,7 +1202,7 @@
    {
     "path": "examples/complex/complex/commands/cmd_init.py",
     "role": "core",
-    "responsibility": "cmd_init 模块，含 1 个顶层符号",
+    "responsibility": "complex 示例的 init 子命令实现",
     "key_symbols": [
      "cli"
     ],
@@ -1216,7 +1219,7 @@
    {
     "path": "examples/complex/complex/commands/cmd_status.py",
     "role": "core",
-    "responsibility": "cmd_status 模块，含 1 个顶层符号",
+    "responsibility": "complex 示例的 status 子命令实现",
     "key_symbols": [
      "cli"
     ],
@@ -1233,7 +1236,7 @@
    {
     "path": "examples/complex/complex/__init__.py",
     "role": "entry",
-    "responsibility": "__init__ 模块，含 0 个顶层符号",
+    "responsibility": "complex 示例的包标记文件，本身没有代码",
     "key_symbols": [],
     "importance": 0.004687,
     "evidence": []
@@ -1241,7 +1244,7 @@
    {
     "path": "examples/complex/complex/commands/__init__.py",
     "role": "entry",
-    "responsibility": "__init__ 模块，含 0 个顶层符号",
+    "responsibility": "子命令包的标记文件，供 Group 扫描目录",
     "key_symbols": [],
     "importance": 0.004687,
     "evidence": []

@@ -3,7 +3,7 @@
   "repo_url": "https://github.com/psf/requests",
   "commit": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
   "generated_by": "RepoTour pipeline (LLM_MODE=mock)",
-  "note": "文案为规则生成的占位内容，站点版需由 Qoder 侧模型重写；结构与证据行号真实有效。",
+  "note": "文案已由 Qoder 侧模型基于 files 字典中的真实代码重写；结构、依赖边与证据行号保持原样，未作改动。",
   "file_count": 37,
   "missing": []
  },
@@ -61,7 +61,7 @@
      "paths": [
       "docs/_themes/flask_theme_support.py"
      ],
-     "note": ""
+     "note": "文档主题的样式支持代码，只影响文档外观。"
     },
     {
      "id": "docs",
@@ -71,7 +71,7 @@
      "paths": [
       "docs/conf.py"
      ],
-     "note": ""
+     "note": "Sphinx 文档配置目录，不参与运行时。"
     },
     {
      "id": ".",
@@ -81,7 +81,7 @@
      "paths": [
       "setup.py"
      ],
-     "note": ""
+     "note": "仓库根目录的安装脚本，负责版本校验与打包入口。"
     },
     {
      "id": "src/requests",
@@ -109,7 +109,7 @@
       "src/requests/structures.py",
       "src/requests/utils.py"
      ],
-     "note": ""
+     "note": "库本体：从顶层 API 到会话、模型、传输适配的完整实现。"
     },
     {
      "id": "tests",
@@ -131,7 +131,7 @@
       "tests/test_utils.py",
       "tests/utils.py"
      ],
-     "note": ""
+     "note": "pytest 用例与共享 fixture，覆盖请求行为与工具函数。"
     },
     {
      "id": "tests/testserver",
@@ -142,7 +142,7 @@
       "tests/testserver/__init__.py",
       "tests/testserver/server.py"
      ],
-     "note": ""
+     "note": "测试用的假 HTTP 服务线程，让用例真实收发字节。"
     }
    ],
    "edges": [
@@ -172,8 +172,8 @@
   "tour": [
    {
     "title": "第0站 · 全景与入口",
-    "narrative": "Requests is a simple, yet elegant, HTTP library. import requests r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))… 全仓共 37 个源码文件、108 条模块依赖边。",
-    "why": "读细节之前，先建立全局地图。",
+    "narrative": "先认清分工：你调用的顶层函数把请求交给会话对象，会话再交给 urllib3 发包，而几乎每个模块都要向本文件问一句「当前环境里有什么」。证据 _resolve_char_detection 依次尝试导入 chardet 和 charset_normalizer，谁先成功用谁，都失败返回 None；文件后面真正调用它，把结果挂成模块级变量。它解决的问题是：响应没声明编码时要靠第三方库猜，而这两个可选依赖装没装都不该让导入崩掉。重点看循环里的 ImportError 兜底，以及上面 is_urllib3_1 怎么判断大版本。",
+    "why": "第一站不读请求怎么发，而读全库共同依赖的环境探测：先知道哪些能力是可选的，后面遇到分支才不会懵。",
     "files": [
      {
       "path": "src/requests/compat.py",
@@ -182,13 +182,13 @@
       "symbol": "_resolve_char_detection"
      }
     ],
-    "quiz": "这个仓库解决什么问题？",
+    "quiz": "_resolve_char_detection 在两个库都没装时返回什么？为什么它用 try/except ImportError 而不是先判断版本号？",
     "order": 1
    },
    {
     "title": "第1站 · certs.py",
-    "narrative": "requests.certs ~~~~~~~~~~~~~~ This module returns the preferred…",
-    "why": "这是程序的入口，所有能力都从这里串起来。",
+    "narrative": "这一站只有十九行，却关系到 HTTPS 能不能连上。本文件不参与请求流程，只回答一个问题：校验服务器证书时该信任哪些根证书。做法是把 certifi 的 where 原样转出，所以会话准备加密连接时拿到的默认根证书路径其实来自 certifi 这个独立包。开头的文档字符串明确说：如果你要给发行版打包，可以改 where 的定义，指向系统自带的证书包。末尾的 __main__ 分支让你能直接运行它打印路径。重点看那一行引入语句，以及为什么本库自己不维护证书列表。",
+    "why": "上一站看的是可选依赖如何兜底，这一站看一个必需依赖如何被外包：先建立「本库只做编排」的印象。",
     "files": [
      {
       "path": "src/requests/certs.py",
@@ -196,13 +196,13 @@
       "end": 15
      }
     ],
-    "quiz": "src/requests/certs.py 负责什么？",
+    "quiz": "requests.certs.where() 返回的路径由哪个包决定？如果你想让程序信任公司自签的根证书，按这段文档该改哪里？",
     "order": 2
    },
    {
     "title": "第2站 · compat.py",
-    "narrative": "requests.compat ~~~~~~~~~~~~~~~ This module previously handled import…；重点看 resolvechardetection。",
-    "why": "按依赖中心度入选：被 14 个文件引用。",
+    "narrative": "回到兼容层，这次看它到底兼容了什么。开头注释说明它原本为两代 Python 的差异而生，如今保留只为向后兼容。往下三块值得记：一是用 urllib3 版本号的首位判断 is_urllib3_1，解析失败就保守当成旧版；二是本站证据里的编码探测库选择；三是 json 的导入兜底，装了 simplejson 就用它并取出对应的 JSONDecodeError，否则退回标准库。它解决的问题是把环境差异集中在一处，别的模块只管从它引入，不必各自判断环境。重点看 is_urllib3_1、has_simplejson 与 JSONDecodeError 三者的来源。",
+    "why": "第0站只把这里当环境探针认了个脸；现在你见过证书外包，回头读完整文件，才能理解「差异集中一处」的设计。",
     "files": [
      {
       "path": "src/requests/compat.py",
@@ -211,13 +211,13 @@
       "symbol": "_resolve_char_detection"
      }
     ],
-    "quiz": "_resolve_char_detection 在 src/requests/compat.py 中的作用是什么？",
+    "quiz": "is_urllib3_1 在版本号解析失败时取什么值，为什么这样选？装了 simplejson 时 JSONDecodeError 来自哪里？",
     "order": 3
    },
    {
     "title": "第3站 · models.py",
-    "narrative": "requests.models ~~~~~~~~~~~~~~~ This module contains the primary…；重点看 RequestEncodingMixin、RequestHooksMixin、Request。",
-    "why": "按依赖中心度入选：被 11 个文件引用。",
+    "narrative": "模型层是数据契约所在：用户填的请求意图、准备发出的成品请求、回来的响应都是这里的类，会话层负责把它们串起来。本站证据落在 RequestEncodingMixin，它被准备请求的类继承。path_url 用 urlsplit 拆开地址，只取路径与查询串，路径为空就补一个斜杠，因为请求行里不能带域名。紧随其后的 _encode_params 把字典或二元组列表编码成查询串，遇到字符串、字节串或带 read 方法的对象则原样透传。它解决的问题是：用户给的各种参数形态都要变成合法地址与请求体。重点看补斜杠那两行和编码分支的顺序。",
+    "why": "环境差异清楚了，接着看真正被传来传去的数据长什么样：先读请求怎么被规范化，再读会话怎么发它。",
     "files": [
      {
       "path": "src/requests/models.py",
@@ -226,13 +226,13 @@
       "symbol": "RequestEncodingMixin"
      }
     ],
-    "quiz": "RequestEncodingMixin 在 src/requests/models.py 中的作用是什么？",
+    "quiz": "path_url 为什么要丢掉域名只留路径？_encode_params 收到一个带 read 方法的文件对象时会做什么？",
     "order": 4
    },
    {
     "title": "第4站 · structures.py",
-    "narrative": "requests.structures ~~~~~~~~~~~~~~~~~~~ Data structures that power…；重点看 CaseInsensitiveDict、LookupDict。",
-    "why": "按依赖中心度入选：被 9 个文件引用。",
+    "narrative": "本文件提供两个小容器，被会话和响应到处使用。证据里的 CaseInsensitiveDict 解决 HTTP 头大小写不敏感的麻烦：内部 _store 用有序字典存「小写键 → 原始键与值」，写入时把键转小写，读取时也转小写，于是同一个头无论怎么写都命中一条；而迭代时吐出的是原始大小写，保证发出去的头不被改写。它继承 MutableMapping，因此更新、取值等方法自动获得。重点看 _store 的二元组结构、三个魔术方法的分工，以及 lower_items 的用途。同文件的 LookupDict 让状态码能按名字访问。",
+    "why": "上一站的请求对象里，头部正是用这个容器装的；先看容器再看用法，才知道大小写问题为什么不会漏到网络层。",
     "files": [
      {
       "path": "src/requests/structures.py",
@@ -241,13 +241,13 @@
       "symbol": "CaseInsensitiveDict"
      }
     ],
-    "quiz": "CaseInsensitiveDict 在 src/requests/structures.py 中的作用是什么？",
+    "quiz": "CaseInsensitiveDict 为什么要在值旁边额外存一份原始键？如果只存小写键，发出去的请求头会有什么问题？",
     "order": 5
    },
    {
     "title": "第5站 · _types.py",
-    "narrative": "requests.types ~~~~~~~~~~~~~~~ This module contains type aliases…；重点看 SupportsRead、hasread、SupportsItems。",
-    "why": "按依赖中心度入选：被 7 个文件引用。",
+    "narrative": "本文件是内部类型契约层，几乎不参与运行逻辑，却决定各模块如何认定参数形态。证据里的 SupportsRead 是一个 Protocol，只要求对象有 read 方法；has_read 先用 isinstance 判断，再退回 hasattr，注释说明这是为了兼容靠 __getattr__ 转发的代理对象。下面的 SupportsItems 同理，只要求 items。它解决的问题是：请求体既可能是字典也可能是文件对象，模型层需要统一判断入口，而不是到处写类型判断。重点看 runtime_checkable 为什么必须加，以及 has_read 的双重判断——上一站的参数编码正是调用它。",
+    "why": "见过模型层的编码分支后，再看它依赖的判断标准从哪来：类型契约是这套灵活参数的底层约定。",
     "files": [
      {
       "path": "src/requests/_types.py",
@@ -256,13 +256,13 @@
       "symbol": "SupportsRead"
      }
     ],
-    "quiz": "SupportsRead 在 src/requests/_types.py 中的作用是什么？",
+    "quiz": "has_read 为什么在 isinstance 之外还要 hasattr？去掉 runtime_checkable 装饰器会让哪一行失效？",
     "order": 6
    },
    {
     "title": "第6站 · cookies.py",
-    "narrative": "requests.cookies ~~~~~~~~~~~~~~~~ Compatibility code to be able to…；重点看 MockRequest、MockResponse、extractcookiestojar。",
-    "why": "按依赖中心度入选：被 8 个文件引用。",
+    "narrative": "本文件是标准库 cookiejar 与本库之间的适配层。标准库的 CookieJar 只认 urllib 那套请求接口，而本库用自己的准备请求对象，于是有了证据里的 MockRequest：它包住一个只读的已准备请求，伪装成标准库期待的样子，提供取主机、取完整地址、判断与读取头部等方法，让 CookieJar 能判断某个 cookie 该不该发给这个域名。新产生的头不写回原请求，而是攒起来由 get_new_headers 交还调用方。它解决的问题是两套接口不兼容。重点看只读约定、get_new_headers，以及配套的 MockResponse。",
+    "why": "请求、头部容器、类型契约都看过之后，再看一个纯粹的适配案例：跨库协作时接口不合怎么办。",
     "files": [
      {
       "path": "src/requests/cookies.py",
@@ -271,13 +271,13 @@
       "symbol": "MockRequest"
      }
     ],
-    "quiz": "MockRequest 在 src/requests/cookies.py 中的作用是什么？",
+    "quiz": "MockRequest 为什么不直接修改原请求的头，而要让调用方通过 get_new_headers 取回？",
     "order": 7
    },
    {
     "title": "第7站 · help.py",
-    "narrative": "Module containing bug report helper(s).；重点看 implementation、info、main。",
-    "why": "按依赖中心度入选：被 1 个文件引用。",
+    "narrative": "本文件与请求流程无关，它是出问题时给你递证据的工具。证据里的 _implementation 先取解释器名字，再按 CPython、PyPy、Jython、IronPython 分别取版本，认不出就写 Unknown，最后返回名字与版本的字典。下面的 info 把它和系统信息、urllib3 版本、编码探测库版本、OpenSSL 版本拼成完整报告，命令行入口 main 直接打印成 json。它解决的问题是：报缺陷时环境信息必须准确且可复制。重点看这几个版本分支的取值差异，以及 info 对可选依赖缺失的处理——顶部那些引入失败就置 None。",
+    "why": "主流程读完后换个视角：维护者怎么定位环境问题，这决定了你以后报问题时该附上什么。",
     "files": [
      {
       "path": "src/requests/help.py",
@@ -286,13 +286,13 @@
       "symbol": "_implementation"
      }
     ],
-    "quiz": "_implementation 在 src/requests/help.py 中的作用是什么？",
+    "quiz": "_implementation 在认不出的解释器上返回什么版本字符串？info() 里某个可选依赖没装时，对应字段是什么？",
     "order": 8
    },
    {
     "title": "第8站 · _internal_utils.py",
-    "narrative": "requests.internalutils ~~~~~~~~~~~~~~ Provides utility functions…；重点看 tonativestring、unicodeisascii。",
-    "why": "按依赖中心度入选：被 6 个文件引用。",
+    "narrative": "本文件只有五十来行，是被模型层和工具层反复调用的小刀。证据里的 to_native_string 接受字符串或字节串：已经是本机字符串就原样返回，否则按给定编码解码，默认 ascii。它解决的问题是协议里的头名、方法名必须是原生字符串，而用户可能传进字节串。紧跟着的 unicode_is_ascii 判断字符串是否只含 ASCII 字符，用来决定地址要不要走国际化域名编码。重点看默认编码为什么是 ascii，以及 builtin_str 这个别名从哪来——它来自兼容层。读完可以顺着调用方回模型层看头部如何被规范化。",
+    "why": "前面几站反复出现字符串转换，这一站把最小的那把刀看清，之后读任何头部处理代码都不会卡住。",
     "files": [
      {
       "path": "src/requests/_internal_utils.py",
@@ -301,13 +301,13 @@
       "symbol": "to_native_string"
      }
     ],
-    "quiz": "to_native_string 在 src/requests/_internal_utils.py 中的作用是什么？",
+    "quiz": "to_native_string 传入字节串且不给 encoding 时按什么解码？为什么默认不用 utf-8？",
     "order": 9
    },
    {
     "title": "最后一站 · 测试与质量",
-    "narrative": "全仓共 42 个测试文件；先跑通它们，再动手改代码，是验证理解最可靠的方式。",
-    "why": "测试是可执行的文档。",
+    "narrative": "最后一站看测试包的初始化。这十四行只做一件事：从 urllib3 引入 SNIMissingWarning，再用 warnings.simplefilter 把它设成每次都触发。注释解释了原因：旧版 urllib3 默认只警告一次，而测试套件里有一条用例专门断言这个警告会出现，沿用默认过滤就会漏掉。导入失败时把它置 None，因为新版 urllib3 已删掉这个警告改为直接报错。它解决的问题是测试环境必须可控，警告策略不能靠默认值。重点看过滤器的作用范围与引入失败的兜底，这也是你给本库补测试前要先了解的约定。",
+    "why": "九站读完实现，最后落到验证环节：知道测试包做了哪些全局设置，你补的用例才不会莫名其妙失败。",
     "files": [
      {
       "path": "tests/__init__.py",
@@ -315,7 +315,7 @@
       "end": 14
      }
     ],
-    "quiz": "哪个测试覆盖了核心模块？",
+    "quiz": "为什么这里要把 SNIMissingWarning 设成 always？在新版 urllib3 上这段代码走到哪个分支？",
     "order": 10
    }
   ],
@@ -323,39 +323,42 @@
    {
     "level": 1,
     "title": "找到入口与启动流程",
-    "description": "打开 src/requests/help.py，列出它导入的前 3 个内部模块。",
+    "description": "打开 src/requests/help.py 的 import 区，写出它引入的 3 个第三方依赖和 1 个库内模块；再读 info()，说明它为什么要把这些依赖的版本号都收集起来。",
     "files": [
      "src/requests/help.py"
     ],
-    "acceptance": "能口头说出启动流程与对应文件",
+    "acceptance": "能指出 help.py 依赖 idna、urllib3，并从包根引入 __version__；能说出 info() 汇总版本是为了生成可复制的 bug 报告环境信息。",
     "hints": [
-     "看 import 区"
+     "import 区分两段：标准库与第三方在前，from . import __version__ 是库内引入。",
+     "info() 里每个可选依赖都有「没装就填 None」的分支，对照顶部 try import 看。"
     ]
    },
    {
     "level": 2,
     "title": "画出一条调用链",
-    "description": "从 src/requests/help.py 出发，画出到 src/requests/models.py 的依赖路径。",
+    "description": "从 src/requests/help.py 出发，沿真实 import 追到 src/requests/models.py：help 从包根引入版本号，包根 __init__.py 又引入模型类。写出这条链上每一跳的具体语句和行号，并在架构图页确认两个文件同属 src/requests 节点。",
     "files": [
      "src/requests/help.py",
      "src/requests/models.py"
     ],
-    "acceptance": "路径与真实 import 关系一致",
+    "acceptance": "能指出 help.py 第 12 行 from . import __version__，以及 __init__.py 第 184 行 from .models import PreparedRequest, Request, Response，链路没有跳步。",
     "hints": [
-     "用架构图核对"
+     "help.py 顶部只有一行库内引入，顺着它跳到 src/requests/__init__.py。",
+     "在 __init__.py 里搜 from .models，注意它出现在依赖校验之后。"
     ]
    },
    {
     "level": 3,
     "title": "为核心模块补一条测试",
-    "description": "为 src/requests/models.py 中的一个函数补充边界用例，加到 tests/__init__.py。",
+    "description": "给 src/requests/models.py 里 RequestEncodingMixin.path_url 补一条边界用例：地址没有路径时应补出斜杠，带查询串时要保留问号与查询内容。新建 tests/test_path_url_extra.py，先读 tests/__init__.py 了解测试包的警告约定，再跑 pytest 确认全绿。",
     "files": [
      "src/requests/models.py",
      "tests/__init__.py"
     ],
-    "acceptance": "运行 pytest 全部通过",
+    "acceptance": "新用例覆盖「无路径」和「带查询串」两种输入并通过；故意去掉补斜杠那两行时它会失败，且 pytest 全量无新增失败。",
     "hints": [
-     "先跑通现有测试确认环境"
+     "先原样跑一次 pytest，确认环境可用再动手。",
+     "path_url 只依赖 self.url，构造一个准备请求对象并设置 url 即可，不需要真的发请求。"
     ]
    }
   ],
@@ -363,7 +366,7 @@
    {
     "path": "src/requests/compat.py",
     "role": "util",
-    "responsibility": "requests.compat ~~~~~~~~~~~~~~~ This module previously handled import…",
+    "responsibility": "集中处理版本与可选依赖差异，供全库引入",
     "key_symbols": [
      "_resolve_char_detection"
     ],
@@ -380,7 +383,7 @@
    {
     "path": "src/requests/models.py",
     "role": "data",
-    "responsibility": "requests.models ~~~~~~~~~~~~~~~ This module contains the primary…",
+    "responsibility": "请求意图、准备请求与响应三种数据模型",
     "key_symbols": [
      "RequestEncodingMixin",
      "RequestHooksMixin",
@@ -401,7 +404,7 @@
    {
     "path": "src/requests/structures.py",
     "role": "core",
-    "responsibility": "requests.structures ~~~~~~~~~~~~~~~~~~~ Data structures that power…",
+    "responsibility": "大小写不敏感字典与状态码查找字典",
     "key_symbols": [
      "CaseInsensitiveDict",
      "LookupDict"
@@ -419,7 +422,7 @@
    {
     "path": "src/requests/_types.py",
     "role": "core",
-    "responsibility": "requests._types ~~~~~~~~~~~~~~~ This module contains type aliases…",
+    "responsibility": "内部类型别名与协议，统一参数形态判断",
     "key_symbols": [
      "SupportsRead",
      "has_read",
@@ -439,7 +442,7 @@
    {
     "path": "src/requests/certs.py",
     "role": "core",
-    "responsibility": "requests.certs ~~~~~~~~~~~~~~ This module returns the preferred…",
+    "responsibility": "转出 certifi 的根证书路径作为默认 CA",
     "key_symbols": [],
     "importance": 0.031507,
     "evidence": [
@@ -453,7 +456,7 @@
    {
     "path": "src/requests/cookies.py",
     "role": "core",
-    "responsibility": "requests.cookies ~~~~~~~~~~~~~~~~ Compatibility code to be able to…",
+    "responsibility": "把标准库 cookiejar 适配到本库请求对象",
     "key_symbols": [
      "MockRequest",
      "MockResponse",
@@ -475,7 +478,7 @@
    {
     "path": "src/requests/help.py",
     "role": "core",
-    "responsibility": "Module containing bug report helper(s).",
+    "responsibility": "收集环境与依赖版本，生成 bug 报告信息",
     "key_symbols": [
      "_implementation",
      "info",
@@ -494,7 +497,7 @@
    {
     "path": "src/requests/_internal_utils.py",
     "role": "util",
-    "responsibility": "requests._internal_utils ~~~~~~~~~~~~~~ Provides utility functions…",
+    "responsibility": "字符串原生化与 ASCII 判断等内部小工具",
     "key_symbols": [
      "to_native_string",
      "unicode_is_ascii"
@@ -512,7 +515,7 @@
    {
     "path": "src/requests/auth.py",
     "role": "core",
-    "responsibility": "requests.auth ~~~~~~~~~~~~~ This module contains the authentication…",
+    "responsibility": "Basic、Digest 等认证方案的实现",
     "key_symbols": [
      "_basic_auth_str",
      "AuthBase",
@@ -533,7 +536,7 @@
    {
     "path": "src/requests/utils.py",
     "role": "util",
-    "responsibility": "requests.utils ~~~~~~~~~~~~~~ This module provides utility functions…",
+    "responsibility": "代理、netrc、文件名猜测等杂项工具",
     "key_symbols": [
      "dict_to_sequence",
      "super_len",
@@ -555,7 +558,7 @@
    {
     "path": "src/requests/exceptions.py",
     "role": "core",
-    "responsibility": "requests.exceptions ~~~~~~~~~~~~~~~~~~~ This module contains the set…",
+    "responsibility": "以 RequestException 为根的异常体系",
     "key_symbols": [
      "RequestException",
      "InvalidJSONError",
@@ -577,7 +580,7 @@
    {
     "path": "src/requests/__version__.py",
     "role": "core",
-    "responsibility": "__version__ 模块，含 0 个顶层符号",
+    "responsibility": "集中存放版本号与包元信息",
     "key_symbols": [],
     "importance": 0.019531,
     "evidence": [
@@ -591,7 +594,7 @@
    {
     "path": "src/requests/__init__.py",
     "role": "entry",
-    "responsibility": "Requests HTTP Library ~~~~~~~~~~~~~~~~~~~~~ Requests is an HTTP…",
+    "responsibility": "包入口：依赖版本校验与公开 API 汇出",
     "key_symbols": [
      "check_compatibility",
      "_check_cryptography"
@@ -609,7 +612,7 @@
    {
     "path": "src/requests/status_codes.py",
     "role": "core",
-    "responsibility": "The ``codes`` object defines a mapping from common names for HTTP…",
+    "responsibility": "把 HTTP 状态码映射成可按名字访问的表",
     "key_symbols": [
      "_init"
     ],
@@ -626,7 +629,7 @@
    {
     "path": "src/requests/sessions.py",
     "role": "core",
-    "responsibility": "requests.sessions ~~~~~~~~~~~~~~~~~ This module provides a Session…",
+    "responsibility": "会话、配置合并与重定向处理的主流程",
     "key_symbols": [
      "merge_setting",
      "merge_hooks",
@@ -647,7 +650,7 @@
    {
     "path": "src/requests/adapters.py",
     "role": "core",
-    "responsibility": "requests.adapters ~~~~~~~~~~~~~~~~~ This module contains the…",
+    "responsibility": "传输适配器：把请求交给 urllib3 连接池",
     "key_symbols": [
      "_urllib3_request_context",
      "BaseAdapter",
@@ -666,7 +669,7 @@
    {
     "path": "src/requests/hooks.py",
     "role": "core",
-    "responsibility": "requests.hooks ~~~~~~~~~~~~~~ This module provides the capabilities…",
+    "responsibility": "事件钩子的默认表与派发逻辑",
     "key_symbols": [
      "default_hooks",
      "dispatch_hook"
@@ -684,7 +687,7 @@
    {
     "path": "src/requests/api.py",
     "role": "api",
-    "responsibility": "requests.api ~~~~~~~~~~~~ This module implements the Requests API.…",
+    "responsibility": "get、post 等顶层便捷函数，内部自建会话",
     "key_symbols": [
      "request",
      "get",
@@ -706,7 +709,7 @@
    {
     "path": "src/requests/packages.py",
     "role": "core",
-    "responsibility": "packages 模块，含 0 个顶层符号",
+    "responsibility": "把旧的内部包名映射到真实第三方模块",
     "key_symbols": [],
     "importance": 0.010579,
     "evidence": [
@@ -720,7 +723,7 @@
    {
     "path": "docs/conf.py",
     "role": "core",
-    "responsibility": "conf 模块，含 0 个顶层符号",
+    "responsibility": "Sphinx 文档构建配置，不参与运行时",
     "key_symbols": [],
     "importance": 0.009612,
     "evidence": [
@@ -734,7 +737,7 @@
    {
     "path": "docs/_themes/flask_theme_support.py",
     "role": "core",
-    "responsibility": "flask_theme_support 模块，含 1 个顶层符号",
+    "responsibility": "文档主题的代码高亮样式定义",
     "key_symbols": [
      "FlaskyStyle"
     ],
@@ -751,7 +754,7 @@
    {
     "path": "setup.py",
     "role": "core",
-    "responsibility": "setup 模块，含 0 个顶层符号",
+    "responsibility": "安装脚本：校验 Python 版本后交给 setuptools",
     "key_symbols": [],
     "importance": 0.008369,
     "evidence": [

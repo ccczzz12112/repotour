@@ -3,7 +3,7 @@
   "repo_url": "https://github.com/axios/axios",
   "commit": "60d72961a6be3cd9ade30d566a95576b9dd3b2ae",
   "generated_by": "RepoTour pipeline (LLM_MODE=mock)",
-  "note": "文案为规则生成的占位内容，站点版需由 Qoder 侧模型重写；结构与证据行号真实有效。",
+  "note": "文案已由 Qoder 侧模型基于 files 字典中的真实代码重写；结构、依赖边与证据行号保持原样，未作改动。",
   "file_count": 283,
   "missing": []
  },
@@ -67,7 +67,7 @@
       "docs/scripts/selectLatestSponsorsBySlug.js",
       "docs/scripts/utils.js"
      ],
-     "note": ""
+     "note": "文档站源码与脚本，含搜索分词及其测试，不参与库运行时。"
     },
     {
      "id": ".",
@@ -83,7 +83,7 @@
       "vitest.config.js",
       "webpack.config.js"
      ],
-     "note": ""
+     "note": "仓库根目录：包入口、类型声明与各类构建配置。"
     },
     {
      "id": "examples",
@@ -99,7 +99,7 @@
       "examples/postMultipartFormData/server.js",
       "examples/upload/server.js"
      ],
-     "note": ""
+     "note": "可运行的示例与配套服务端，演示各类请求场景。"
     },
     {
      "id": "lib",
@@ -181,7 +181,7 @@
       "lib/platform/node/classes/URLSearchParams.js",
       "lib/platform/node/index.js"
      ],
-     "note": ""
+     "note": "库本体：核心类、适配器、助手函数与平台适配层。"
     },
     {
      "id": "sandbox",
@@ -192,7 +192,7 @@
       "sandbox/client.js",
       "sandbox/server.js"
      ],
-     "note": ""
+     "note": "本地联调沙箱，前后端各一份，用于手工验证。"
     },
     {
      "id": "scripts",
@@ -203,7 +203,7 @@
       "scripts/axios-build-instance.js",
       "scripts/benchmark-merge-config.js"
      ],
-     "note": ""
+     "note": "构建与基准脚本，供维护者本地执行。"
     },
     {
      "id": "tests",
@@ -397,7 +397,7 @@
       "tests/unit/utils/toFlatObject.test.js",
       "tests/unit/utils/trim.test.js"
      ],
-     "note": ""
+     "note": "浏览器与服务端两套测试用例，覆盖公开行为。"
     }
    ],
    "edges": [
@@ -448,8 +448,8 @@
   "tour": [
    {
     "title": "第0站 · 全景与入口",
-    "narrative": "Get Security Updates for Axios v0 & Early Access Provider → 💎 Platinum sponsors We're passionate about making open source sustainable. 全仓共 284 个源码文件、393 条模块依赖边。",
-    "why": "读细节之前，先建立全局地图。",
+    "narrative": "先建立地图：包入口把默认实例摊成命名导出，组装层负责把核心类包成可调用对象，而它们几乎每一步都要问本文件「这个值是什么类型」。证据 isBuffer 不靠实例判断，而是层层设防后调用值自身构造器上的同名方法，这样跨上下文或伪造的对象也不会误判。它上方的 kindOf 把对象标签字符串缓存起来，kindOfTest 与 typeOfTest 再由它批量生成判断函数。它解决的问题是：浏览器与服务端的对象形态不同，全库需要统一且抗伪造的类型判断。重点看 kindOf 的缓存写法和 isBuffer 的防御顺序。",
+    "why": "第一站不读请求怎么发，而读全库最常用的类型判断：后面每个分支都建立在这些谓词之上。",
     "files": [
      {
       "path": "lib/utils.js",
@@ -458,13 +458,13 @@
       "symbol": "that"
      }
     ],
-    "quiz": "这个仓库解决什么问题？",
+    "quiz": "isBuffer 为什么不直接用 instanceof？kindOf 的缓存为什么用 Object.create(null) 而不是普通对象？",
     "order": 1
    },
    {
     "title": "第1站 · index.js",
-    "narrative": "index 模块，含 0 个顶层符号",
-    "why": "这是程序的入口，所有能力都从这里串起来。",
+    "narrative": "这一站是包的对外契约。文件先从组装层引入默认实例，再用一次解构把实例上挂的静态属性取出来：Axios、AxiosError、CanceledError、CancelToken、isCancel、toFormData、AxiosHeaders、mergeConfig 等，最后本站证据这段导出语句把它们连同默认导出一并暴露。注释写得很直白：顶层导出要和静态属性保持一致，这样两种模块格式下引入到的东西才一样。它解决的问题是双格式打包时的接口一致性。重点看解构清单与导出清单是否逐项对应，以及为什么 create 也在其中。",
+    "why": "知道底层类型判断之后，先看门面暴露了什么：这份清单就是你以后能直接用的全部公开接口。",
     "files": [
      {
       "path": "index.js",
@@ -472,13 +472,13 @@
       "end": 40
      }
     ],
-    "quiz": "index.js 负责什么？",
+    "quiz": "index.js 为什么要先解构再导出，而不是直接转发默认实例？如果漏掉一项会发生什么？",
     "order": 2
    },
    {
     "title": "第2站 · axios.js",
-    "narrative": "Create an instance of Axios @param {Object} defaultConfig The…；重点看 createInstance、create、to。",
-    "why": "它被 index.js 直接导入，是这条调用链上的第 1 跳。",
+    "narrative": "组装层只有九十行，却是「这个导出既能当函数调用又能当对象用」的答案。证据 createInstance 先新建一个核心类实例作为上下文，再用 bind 把核心类原型上的 request 方法绑到它，得到一个可调用函数；接着两次 utils.extend 把原型方法和实例属性都拷到这个函数上，于是便捷方法与 request 同时存在。最后挂上 instance.create，它用 mergeConfig 合并默认配置后递归调用自己。它解决的问题是：一个导出既是函数又带全套方法与静态属性。重点看绑定那一行、两次拷贝的顺序，以及 create 的递归。",
+    "why": "门面清单看完，接着回答「这些属性是怎么长到一个函数上的」：这是本仓库最反直觉的一处设计。",
     "files": [
      {
       "path": "lib/axios.js",
@@ -487,13 +487,13 @@
       "symbol": "createInstance"
      }
     ],
-    "quiz": "createInstance 在 lib/axios.js 中的作用是什么？",
+    "quiz": "createInstance 里两次 utils.extend 分别拷贝了什么？少掉第一次会让哪类调用失效？",
     "order": 3
    },
    {
     "title": "第3站 · utils.js",
-    "narrative": "Determine whether an inherited object must be treated as a…；重点看 that、accessors、isBuffer。",
-    "why": "它被 axios.js 直接导入，是这条调用链上的第 2 跳。",
+    "narrative": "回到工具层，这次看它怎么批量生产判断函数。kindOf 是一个立即执行的闭包，把对象标签字符串到类型名的映射缓存下来，切片去掉前后缀再转小写；kindOfTest 接收类型名返回比较函数，typeOfTest 则直接用 typeof。于是 isUndefined 一行就生成了，而 isBuffer 因为要防伪造只能手写。往下 isArrayBuffer、isArrayBufferView、isString、isFunction、isNumber 各自负责一类值，适配器与请求体转换全靠它们分流。它解决的问题是：类型判断既要统一又要便宜。重点看哪些判断能生成、哪些必须手写。",
+    "why": "第0站只认了 isBuffer 一个谓词；现在你已经见过组装层的拷贝逻辑，回头读生成器才明白这套工具为何如此组织。",
     "files": [
      {
       "path": "lib/utils.js",
@@ -502,13 +502,13 @@
       "symbol": "that"
      }
     ],
-    "quiz": "that 在 lib/utils.js 中的作用是什么？",
+    "quiz": "kindOfTest 与 typeOfTest 的判断依据有什么不同？举一个只能用前者判断的类型。",
     "order": 4
    },
    {
     "title": "第4站 · bind.js",
-    "narrative": "Create a bound version of a function with a specified this…；重点看 with、to、that。",
-    "why": "它被 utils.js 直接导入，是这条调用链上的第 3 跳。",
+    "narrative": "本文件只有十五行，是上一站那行绑定的全部实现。bind 接收函数与目标上下文，返回内层 wrap，wrap 用 apply 把 arguments 原样转交，从而固定 this。它解决的问题是：组装层把核心类原型上的方法摘下来挂到普通函数上，摘下来后 this 就丢了，必须显式绑回去。重点看 apply 与 arguments 的搭配：wrap 不声明形参，任意个数的参数都能透传，这正是核心方法能被当作普通函数调用的前提。读完回到组装层，你会立刻认出它用在哪一行。",
+    "why": "上一站看到绑定被调用，这一站把它拆开：最小的工具往往解释了最关键的魔法。",
     "files": [
      {
       "path": "lib/helpers/bind.js",
@@ -517,13 +517,13 @@
       "symbol": "with"
      }
     ],
-    "quiz": "with 在 lib/helpers/bind.js 中的作用是什么？",
+    "quiz": "wrap 为什么不写成 (…args) 而用 arguments？如果 bind 直接返回 fn 会发生什么？",
     "order": 5
    },
    {
     "title": "第5站 · AxiosError.js",
-    "narrative": "Append the stack of a wrapped error to target.stack. cause…；重点看 hasOwnOrPrototypeToJSON、redactConfig、stringifySafely。",
-    "why": "按依赖中心度入选：被 37 个文件引用。",
+    "narrative": "错误层决定失败时你拿到什么。证据顶部先定义 REDACTED 常量，再用 hasOwnOrPrototypeToJSON 沿原型链往上找 toJSON，判断对象是否自带序列化能力。紧跟着的 redactConfig 才是重点：它把配置拷成快照，键名转小写后与敏感键集合比对，命中就换成 REDACTED，遇到数组递归、遇到头部对象先转普通对象，并用 seen 数组短路循环引用。它解决的问题是：错误信息里常带配置，而配置里可能有密码或令牌，直接打印会泄露。重点看递归与去环，以及为什么要查原型链上的 toJSON。",
+    "why": "正常路径读完后补上失败路径：知道错误对象怎么被脱敏，你才敢在日志里打印它。",
     "files": [
      {
       "path": "lib/core/AxiosError.js",
@@ -532,13 +532,13 @@
       "symbol": "hasOwnOrPrototypeToJSON"
      }
     ],
-    "quiz": "hasOwnOrPrototypeToJSON 在 lib/core/AxiosError.js 中的作用是什么？",
+    "quiz": "redactConfig 用什么办法避免循环引用导致的无限递归？敏感键比对为什么先转小写？",
     "order": 6
    },
    {
     "title": "第6站 · AxiosHeaders.js",
-    "narrative": "AxiosHeaders 模块，含 14 个顶层符号；重点看 normalizeHeader、normalizeValue、parseTokens。",
-    "why": "按依赖中心度入选：被 15 个文件引用。",
+    "narrative": "头部层是请求发出前最后一道规范化。证据里 normalizeHeader 把头名转字符串、去空白、转小写，所以大小写不同的同名头会被合并；normalizeValue 对 false 与空值原样保留，数组逐项处理，其余交给 sanitizeHeaderValue 清洗，防止换行注入。再往下 parseTokens 用正则把带参数的头值切成键值表，配合 trimOWS 与 decodeQuotedString 处理引号与折行。它解决的问题是：头部既要大小写不敏感，又必须拒绝非法字符。重点看两个规范化函数的分工，以及切分参数的那条正则。",
+    "why": "错误脱敏里出现了头部对象，这一站正面读它：头部是用户输入直接进入协议的地方，规则必须先看清。",
     "files": [
      {
       "path": "lib/core/AxiosHeaders.js",
@@ -547,13 +547,13 @@
       "symbol": "normalizeHeader"
      }
     ],
-    "quiz": "normalizeHeader 在 lib/core/AxiosHeaders.js 中的作用是什么？",
+    "quiz": "normalizeValue 为什么对 false 和空值特殊处理？sanitizeHeaderValue 主要防的是什么？",
     "order": 7
    },
    {
     "title": "第7站 · toFormData.js",
-    "narrative": "Determines if the given thing is a array or js object. @param…；重点看 isVisitable、removeBrackets、renderKey。",
-    "why": "按依赖中心度入选：被 9 个文件引用。",
+    "narrative": "本文件负责把普通对象变成表单数据，是上传与表单提交的核心助手。证据先给出深度上限常量 DEFAULT_FORM_DATA_MAX_DEPTH 为 100，再用 isVisitable 判断一个值是否还能继续往下走，只有普通对象与数组算可访问。下面 removeBrackets 去掉键尾的方括号，renderKey 把访问路径拼成带方括号或点号的键名，isFlatArray 判断数组是否全是叶子值。它解决的问题是：嵌套结构要按后端约定的键名规则摊平，又不能因为过深而栈溢出。重点看可访问判断的范围与两种键名风格。",
+    "why": "头部规范化之后看请求体规范化：两者都是把用户随手给的结构翻译成协议能接受的形式。",
     "files": [
      {
       "path": "lib/helpers/toFormData.js",
@@ -562,13 +562,13 @@
       "symbol": "isVisitable"
      }
     ],
-    "quiz": "isVisitable 在 lib/helpers/toFormData.js 中的作用是什么？",
+    "quiz": "renderKey 在 dots 为真与为假时生成的键名有什么不同？深度上限常量防的是什么问题？",
     "order": 8
    },
    {
     "title": "第8站 · index.js",
-    "narrative": "index 模块，含 0 个顶层符号",
-    "why": "按依赖中心度入选：被 14 个文件引用。",
+    "narrative": "这一站只有八行，却解释了同一份代码为什么能同时跑在浏览器与服务端。文件引入具体平台实现与一组通用工具，本站证据把两者展开合并成一个默认导出对象，于是上层只认这一个入口，拿到的能力却随构建目标而变。平台目录里另有浏览器分支，打包时按环境替换被引入的那一份。它解决的问题是：环境差异不能靠散落在各处的条件判断，而要收敛成一次替换。重点看展开顺序，后展开的平台属性会覆盖同名通用工具，以及上层如何统一引入它。",
+    "why": "前面所有分支都假设环境已知，这一站补上最后一块：环境能力是从哪里注入的。",
     "files": [
      {
       "path": "lib/platform/index.js",
@@ -576,13 +576,13 @@
       "end": 7
      }
     ],
-    "quiz": "lib/platform/index.js 负责什么？",
+    "quiz": "两个展开运算符合并时，同名属性以哪一份为准？这样安排对上层代码有什么好处？",
     "order": 9
    },
    {
     "title": "最后一站 · 测试与质量",
-    "narrative": "全仓共 197 个测试文件；先跑通它们，再动手改代码，是验证理解最可靠的方式。",
-    "why": "测试是可执行的文档。",
+    "narrative": "最后一站落在文档站的搜索分词测试上。它用运行时自带的测试器与严格断言，不依赖第三方框架：先引入被测的 tokenizeSearchText，第一条用例断言英文配置串被切成原词，第二条用例断言中文按单字与重叠二元组切分。它解决的问题是：文档搜索要同时支持中英文，分词规则一旦改坏，搜索会静默失效，而这类纯函数最适合用断言锁住。重点看两条用例的输入与期望数组，以及中文为什么用重叠二元组——这是你给本仓库补测试时可以直接照抄的最小范式。",
+    "why": "九站读完实现，最后给一个能立刻照抄的验证范式：纯函数加断言，是成本最低的回归防线。",
     "files": [
      {
       "path": "docs/.vitepress/tokenizeSearchText.test.js",
@@ -590,7 +590,7 @@
       "end": 15
      }
     ],
-    "quiz": "哪个测试覆盖了核心模块？",
+    "quiz": "中文分词为什么除了单字还要重叠二元组？这两条用例分别锁住了什么行为？",
     "order": 10
    }
   ],
@@ -598,39 +598,42 @@
    {
     "level": 1,
     "title": "找到入口与启动流程",
-    "description": "打开 index.js，列出它导入的前 3 个内部模块。",
+    "description": "打开 index.js，写出它唯一的库内引入语句，再对照解构清单与 export 清单，说明为什么两者必须逐项对应；顺手指出 create 与 Axios 这两项在组装层的哪个位置被挂上实例。",
     "files": [
      "index.js"
     ],
-    "acceptance": "能口头说出启动流程与对应文件",
+    "acceptance": "能指出 index.js 第 1 行引入 lib/axios.js，并说明顶层导出要与实例静态属性一致才能兼容两种模块格式；能在 lib/axios.js 第 39 行与第 50 行找到 create 与 Axios。",
     "hints": [
-     "看 import 区"
+     "index.js 顶部只有一行 import，其余都是解构与导出。",
+     "在 lib/axios.js 里搜 instance.create 与 axios.Axios。"
     ]
    },
    {
     "level": 2,
     "title": "画出一条调用链",
-    "description": "从 index.js 出发，画出到 lib/helpers/bind.js 的依赖路径。",
+    "description": "从 index.js 出发，沿真实 import 追到 lib/helpers/bind.js：入口引入组装层，组装层引入绑定助手。写出这条链上每一跳的语句与行号，并指出绑定助手在 createInstance 里被用在哪一行、绑的是哪个方法。",
     "files": [
      "index.js",
      "lib/helpers/bind.js"
     ],
-    "acceptance": "路径与真实 import 关系一致",
+    "acceptance": "能指出 index.js 第 1 行引入 lib/axios.js、lib/axios.js 第 4 行引入 bind，并在第 30 行看到它绑定核心类原型上的 request。",
     "hints": [
-     "用架构图核对"
+     "先看 lib/axios.js 顶部的 import 区，bind 排在第二位。",
+     "createInstance 的第二行就是绑定调用，注意第一个实参是原型方法。"
     ]
    },
    {
     "level": 3,
     "title": "为核心模块补一条测试",
-    "description": "为 lib/helpers/bind.js 中的一个函数补充边界用例，加到 docs/.vitepress/tokenizeSearchText.test.js。",
+    "description": "给 lib/helpers/bind.js 的 bind 补边界用例：绑定后 this 指向目标对象、任意个数参数都能透传、返回值原样带回。参照 docs/.vitepress/tokenizeSearchText.test.js 的写法，用运行时自带测试器与严格断言新建一个测试文件，再按仓库脚本跑测试。",
     "files": [
      "lib/helpers/bind.js",
      "docs/.vitepress/tokenizeSearchText.test.js"
     ],
-    "acceptance": "运行 npm test 全部通过",
+    "acceptance": "新用例覆盖上下文绑定、多参透传与返回值三点并通过；把 apply 换成直接调用时至少一条失败，且全量测试无新增失败。",
     "hints": [
-     "先跑通现有测试确认环境"
+     "先原样跑一次现有测试，确认环境可用再动手。",
+     "参照那份文档测试的两行引入：node:test 与 node:assert/strict，不需要额外依赖。"
     ]
    }
   ],
@@ -638,7 +641,7 @@
    {
     "path": "lib/utils.js",
     "role": "util",
-    "responsibility": "* Determine whether an inherited object must be treated as a…",
+    "responsibility": "全库通用工具：类型判断、对象合并与遍历",
     "key_symbols": [
      "that",
      "accessors",
@@ -660,7 +663,7 @@
    {
     "path": "lib/helpers/bind.js",
     "role": "core",
-    "responsibility": "* Create a bound version of a function with a specified `this`…",
+    "responsibility": "把函数绑到指定上下文，保留任意参数透传",
     "key_symbols": [
      "with",
      "to",
@@ -681,7 +684,7 @@
    {
     "path": "index.js",
     "role": "core",
-    "responsibility": "index 模块，含 0 个顶层符号",
+    "responsibility": "包入口：把默认实例的静态属性摊成命名导出",
     "key_symbols": [],
     "importance": 0.020233,
     "evidence": [
@@ -695,7 +698,7 @@
    {
     "path": "lib/core/AxiosError.js",
     "role": "core",
-    "responsibility": "* Append the stack of a wrapped error to `target.stack`. * * `cause`…",
+    "responsibility": "统一错误类型，附带配置脱敏与快照能力",
     "key_symbols": [
      "hasOwnOrPrototypeToJSON",
      "redactConfig",
@@ -717,7 +720,7 @@
    {
     "path": "lib/core/AxiosHeaders.js",
     "role": "core",
-    "responsibility": "AxiosHeaders 模块，含 14 个顶层符号",
+    "responsibility": "头部容器：大小写归一、清洗与解析",
     "key_symbols": [
      "normalizeHeader",
      "normalizeValue",
@@ -739,7 +742,7 @@
    {
     "path": "lib/helpers/toFormData.js",
     "role": "core",
-    "responsibility": "* Determines if the given thing is a array or js object. * * @param…",
+    "responsibility": "把嵌套对象按约定键名摊平成表单数据",
     "key_symbols": [
      "isVisitable",
      "removeBrackets",
@@ -761,7 +764,7 @@
    {
     "path": "lib/axios.js",
     "role": "core",
-    "responsibility": "* Create an instance of Axios * * @param {Object} defaultConfig The…",
+    "responsibility": "组装默认实例：把核心类包成可调用函数",
     "key_symbols": [
      "createInstance",
      "create",
@@ -783,7 +786,7 @@
    {
     "path": "lib/platform/index.js",
     "role": "core",
-    "responsibility": "index 模块，含 0 个顶层符号",
+    "responsibility": "合并通用工具与当前平台能力，统一出口",
     "key_symbols": [],
     "importance": 0.007607,
     "evidence": [
@@ -797,7 +800,7 @@
    {
     "path": "lib/helpers/sanitizeHeaderValue.js",
     "role": "core",
-    "responsibility": "sanitizeHeaderValue 模块，含 5 个顶层符号",
+    "responsibility": "清洗头部值，剔除非法字符与换行注入",
     "key_symbols": [
      "trimSPorHTAB",
      "sanitizeValue",
@@ -818,7 +821,7 @@
    {
     "path": "lib/helpers/parseHeaders.js",
     "role": "core",
-    "responsibility": "* Parse headers into an object * * ``` * Date: Wed, 27 Aug 2014…",
+    "responsibility": "把原始响应头文本解析成键值对象",
     "key_symbols": [
      "parser"
     ],
@@ -835,7 +838,7 @@
    {
     "path": "lib/platform/node/classes/FormData.js",
     "role": "core",
-    "responsibility": "FormData 模块，含 0 个顶层符号",
+    "responsibility": "服务端平台下直接转出内置表单类",
     "key_symbols": [],
     "importance": 0.005566,
     "evidence": [
@@ -849,7 +852,7 @@
    {
     "path": "lib/platform/common/utils.js",
     "role": "util",
-    "responsibility": "* Determine if we're running in a standard browser environment * *…",
+    "responsibility": "跨平台通用的环境判断与能力探测",
     "key_symbols": [],
     "importance": 0.005543,
     "evidence": [
@@ -863,7 +866,7 @@
    {
     "path": "lib/platform/node/index.js",
     "role": "core",
-    "responsibility": "index 模块，含 0 个顶层符号",
+    "responsibility": "服务端平台能力表：类、协议与流支持",
     "key_symbols": [],
     "importance": 0.005426,
     "evidence": [
@@ -877,7 +880,7 @@
    {
     "path": "lib/cancel/CanceledError.js",
     "role": "core",
-    "responsibility": "* A `CanceledError` is an object that is thrown when an operation is…",
+    "responsibility": "取消专用错误，带可识别的取消标记",
     "key_symbols": [
      "CanceledError"
     ],
@@ -894,7 +897,7 @@
    {
     "path": "lib/helpers/AxiosURLSearchParams.js",
     "role": "core",
-    "responsibility": "* It encodes a string by replacing all characters that are not in the…",
+    "responsibility": "自带编码规则的查询串序列化器",
     "key_symbols": [
      "encode",
      "replacer",
@@ -916,7 +919,7 @@
    {
     "path": "lib/platform/node/classes/URLSearchParams.js",
     "role": "core",
-    "responsibility": "URLSearchParams 模块，含 0 个顶层符号",
+    "responsibility": "服务端平台下转出内置查询串类",
     "key_symbols": [],
     "importance": 0.003939,
     "evidence": [
@@ -930,7 +933,7 @@
    {
     "path": "scripts/axios-build-instance.js",
     "role": "core",
-    "responsibility": "axios-build-instance 模块，含 0 个顶层符号",
+    "responsibility": "构建脚本用的定制实例，改写请求转换",
     "key_symbols": [],
     "importance": 0.00363,
     "evidence": [
@@ -944,7 +947,7 @@
    {
     "path": "lib/platform/node/classes/Buffer.js",
     "role": "core",
-    "responsibility": "Buffer 模块，含 0 个顶层符号",
+    "responsibility": "探测并转出服务端字节缓冲能力",
     "key_symbols": [],
     "importance": 0.003589,
     "evidence": [
@@ -958,7 +961,7 @@
    {
     "path": "lib/adapters/adapters.js",
     "role": "core",
-    "responsibility": "* Known adapters mapping. * Provides environment-specific adapters…",
+    "responsibility": "按名字或函数挑选可用适配器",
     "key_symbols": [
      "getAdapter",
      "is",
@@ -977,7 +980,7 @@
    {
     "path": "lib/defaults/index.js",
     "role": "core",
-    "responsibility": "* It takes a string, tries to parse it, and if it fails, it returns…",
+    "responsibility": "默认配置与请求、响应转换的默认实现",
     "key_symbols": [
      "that",
      "stringifySafely",
@@ -998,7 +1001,7 @@
    {
     "path": "lib/env/data.js",
     "role": "core",
-    "responsibility": "data 模块，含 1 个顶层符号",
+    "responsibility": "存放版本号等构建期注入的常量",
     "key_symbols": [
      "VERSION"
     ],
@@ -1015,7 +1018,7 @@
    {
     "path": "lib/adapters/http.js",
     "role": "core",
-    "responsibility": "* If the proxy, auth, sensitive header, or config beforeRedirects…",
+    "responsibility": "服务端适配器：走原生请求与代理处理",
     "key_symbols": [
      "handleSocketError",
      "isNodeNativeEnvProxySupported",
@@ -1037,7 +1040,7 @@
    {
     "path": "lib/core/mergeConfig.js",
     "role": "util",
-    "responsibility": "* Config-specific merge-function which creates a new config-object *…",
+    "responsibility": "按字段策略合并默认配置与本次配置",
     "key_symbols": [
      "mergeParams",
      "copy",
@@ -1059,7 +1062,7 @@
    {
     "path": "lib/helpers/formDataToJSON.js",
     "role": "core",
-    "responsibility": "* It takes a string like `foo[x][y][z]` and returns an array like…",
+    "responsibility": "把表单数据还原成嵌套对象，限制深度",
     "key_symbols": [
      "throwIfDepthExceeded",
      "parsePropPath",
@@ -1081,7 +1084,7 @@
    {
     "path": "lib/adapters/fetch.js",
     "role": "core",
-    "responsibility": "* Encode a UTF-8 string to a Latin-1 byte string for use with btoa().…",
+    "responsibility": "基于 fetch 的适配器，支持流式收发",
     "key_symbols": [
      "was",
      "isFetchAdapter",
@@ -1100,7 +1103,7 @@
    {
     "path": "docs/scripts/selectLatestSponsorsBySlug.js",
     "role": "core",
-    "responsibility": "* Selects the most recent membership for each sponsor slug. * A valid…",
+    "responsibility": "文档脚本：按标识挑选最新赞助者",
     "key_symbols": [
      "selectLatestSponsorsBySlug"
     ],
@@ -1117,7 +1120,7 @@
    {
     "path": "lib/core/assertParamsAcyclic.js",
     "role": "core",
-    "responsibility": "assertParamsAcyclic 模块，含 1 个顶层符号",
+    "responsibility": "断言查询参数无循环引用，避免死循环",
     "key_symbols": [
      "assertParamsAcyclic"
     ],
@@ -1134,7 +1137,7 @@
    {
     "path": "lib/adapters/xhr.js",
     "role": "core",
-    "responsibility": "xhr 模块，含 10 个顶层符号",
+    "responsibility": "浏览器适配器：用 XMLHttpRequest 收发",
     "key_symbols": [
      "dispatchXhrRequest",
      "done",
@@ -1156,7 +1159,7 @@
    {
     "path": "docs/scripts/utils.js",
     "role": "util",
-    "responsibility": "utils 模块，含 3 个顶层符号",
+    "responsibility": "文档脚本的彩色终端输出小工具",
     "key_symbols": [
      "printSuccessMessage",
      "printInfoMessage",
@@ -1175,7 +1178,7 @@
    {
     "path": "lib/helpers/speedometer.js",
     "role": "core",
-    "responsibility": "* Calculate data maxRate * @param {Number} [samplesCount= 10] *…",
+    "responsibility": "滑动窗口测速，供进度事件估算速率",
     "key_symbols": [
      "speedometer",
      "push"
@@ -1193,7 +1196,7 @@
    {
     "path": "lib/helpers/throttle.js",
     "role": "core",
-    "responsibility": "* Throttle decorator * @param {Function} fn * @param {Number} freq *…",
+    "responsibility": "按频率节流回调，减少进度回调次数",
     "key_symbols": [
      "throttle"
     ],
@@ -1210,7 +1213,7 @@
    {
     "path": "lib/defaults/transitional.js",
     "role": "core",
-    "responsibility": "transitional 模块，含 0 个顶层符号",
+    "responsibility": "过渡期开关：宽松解析与静默兼容行为",
     "key_symbols": [],
     "importance": 0.00264,
     "evidence": [
@@ -1224,7 +1227,7 @@
    {
     "path": "lib/helpers/normalizeURLForProtocolCheck.js",
     "role": "core",
-    "responsibility": "* Match WHATWG URL preprocessing before checking a URL's protocol. *…",
+    "responsibility": "规范化地址以便安全地判断协议",
     "key_symbols": [
      "normalizeURLForProtocolCheck"
     ],
@@ -1241,7 +1244,7 @@
    {
     "path": "lib/helpers/parseProtocol.js",
     "role": "core",
-    "responsibility": "parseProtocol 模块，含 1 个顶层符号",
+    "responsibility": "从地址里取出协议前缀",
     "key_symbols": [
      "parseProtocol"
     ],
@@ -1258,7 +1261,7 @@
    {
     "path": "lib/helpers/readBlob.js",
     "role": "data",
-    "responsibility": "readBlob 模块，含 0 个顶层符号",
+    "responsibility": "把 Blob 异步读成字符串或字节数据",
     "key_symbols": [],
     "importance": 0.002579,
     "evidence": [
@@ -1272,7 +1275,7 @@
    {
     "path": "lib/core/Axios.js",
     "role": "core",
-    "responsibility": "* Create a new instance of Axios * * @param {Object} instanceConfig…",
+    "responsibility": "核心类：拦截器链与请求方法的调度",
     "key_symbols": [
      "Axios",
      "unshiftRequestInterceptors",
@@ -1294,7 +1297,7 @@
    {
     "path": "lib/helpers/formDataToBlob.js",
     "role": "core",
-    "responsibility": "formDataToBlob 模块，含 2 个顶层符号",
+    "responsibility": "把表单数据合成单个 Blob 与错误类型",
     "key_symbols": [
      "FormDataError",
      "formDataToBlob"
@@ -1312,7 +1315,7 @@
    {
     "path": "lib/core/buildFullPath.js",
     "role": "core",
-    "responsibility": "* Creates a new URL by combining the baseURL with the requestedURL, *…",
+    "responsibility": "拼接基址与相对路径，并校验协议",
     "key_symbols": [
      "redactFragment",
      "redactSensitiveURLParts",
@@ -1333,7 +1336,7 @@
    {
     "path": "lib/helpers/buildURL.js",
     "role": "core",
-    "responsibility": "* It replaces URL-encoded forms of `:`, `$`, `,`, and spaces with *…",
+    "responsibility": "把查询参数编码后拼到地址末尾",
     "key_symbols": [
      "encode",
      "buildURL"
@@ -1351,7 +1354,7 @@
    {
     "path": "lib/helpers/isAbsoluteURL.js",
     "role": "core",
-    "responsibility": "* Determines whether the specified URL is absolute * * @param…",
+    "responsibility": "判断地址是否自带协议或双斜杠",
     "key_symbols": [
      "isAbsoluteURL"
     ],
@@ -1368,7 +1371,7 @@
    {
     "path": "docs/blog/posts.data.ts",
     "role": "core",
-    "responsibility": "posts.data 模块，含 1 个顶层符号",
+    "responsibility": "文档博客的数据加载与日期归一",
     "key_symbols": [
      "normalizeDate"
     ],
@@ -1385,7 +1388,7 @@
    {
     "path": "lib/cancel/CancelToken.js",
     "role": "core",
-    "responsibility": "* A `CancelToken` is an object that can be used to request…",
+    "responsibility": "旧式取消令牌：用承诺广播取消信号",
     "key_symbols": [
      "CancelToken",
      "promiseExecutor",
@@ -1407,7 +1410,7 @@
    {
     "path": "lib/helpers/progressEventReducer.js",
     "role": "core",
-    "responsibility": "progressEventReducer 模块，含 3 个顶层符号",
+    "responsibility": "把原始进度事件整理成带速率的回调",
     "key_symbols": [
      "progressEventReducer",
      "progressEventDecorator",
@@ -1426,7 +1429,7 @@
    {
     "path": "lib/helpers/combineURLs.js",
     "role": "core",
-    "responsibility": "* Creates a new URL by combining the specified URLs * * @param…",
+    "responsibility": "拼接基址与相对路径，处理斜杠",
     "key_symbols": [
      "combineURLs"
     ],
@@ -1443,7 +1446,7 @@
    {
     "path": "lib/helpers/cookies.js",
     "role": "core",
-    "responsibility": "cookies 模块，含 0 个顶层符号",
+    "responsibility": "浏览器环境下读写 cookie 的薄封装",
     "key_symbols": [],
     "importance": 0.002441,
     "evidence": [
@@ -1457,7 +1460,7 @@
    {
     "path": "lib/helpers/HttpStatusCode.js",
     "role": "core",
-    "responsibility": "* @deprecated Use `ContentTooLarge` instead.",
+    "responsibility": "状态码常量表，便于按名字引用",
     "key_symbols": [],
     "importance": 0.002438,
     "evidence": [
@@ -1471,7 +1474,7 @@
    {
     "path": "lib/helpers/resolveConfig.js",
     "role": "util",
-    "responsibility": "* Encode a UTF-8 string to a Latin-1 byte string for use with btoa().…",
+    "responsibility": "整理本次配置：认证、跨域与表单处理",
     "key_symbols": [
      "resolveConfig"
     ],
@@ -1488,7 +1491,7 @@
    {
     "path": "lib/core/assertValidRequestUrl.js",
     "role": "core",
-    "responsibility": "* Reject a `null` or `undefined` url that a built-in adapter would…",
+    "responsibility": "发请求前校验地址与适配器组合合法",
     "key_symbols": [
      "assertValidRequestUrl"
     ],
@@ -1505,7 +1508,7 @@
    {
     "path": "lib/platform/browser/classes/URLSearchParams.js",
     "role": "core",
-    "responsibility": "URLSearchParams 模块，含 0 个顶层符号",
+    "responsibility": "浏览器平台下择用内置或自带查询串类",
     "key_symbols": [],
     "importance": 0.002413,
     "evidence": [
@@ -1519,7 +1522,7 @@
    {
     "path": "lib/core/settle.js",
     "role": "core",
-    "responsibility": "* Resolve or reject a Promise based on response status. * * @param…",
+    "responsibility": "按状态码校验决定兑现还是拒绝承诺",
     "key_symbols": [
      "that",
      "settle"
@@ -1537,7 +1540,7 @@
    {
     "path": "lib/cancel/isCancel.js",
     "role": "core",
-    "responsibility": "isCancel 模块，含 1 个顶层符号",
+    "responsibility": "判断一个值是否为取消标记",
     "key_symbols": [
      "isCancel"
     ],
@@ -1554,7 +1557,7 @@
    {
     "path": "lib/helpers/estimateDataURLDecodedBytes.js",
     "role": "data",
-    "responsibility": "* Estimate data: URL byte lengths *without* allocating large buffers.…",
+    "responsibility": "估算 data 地址解码后的字节数",
     "key_symbols": [
      "estimateDataURLDecodedBytes",
      "estimateDataURLBufferAllocation"
@@ -1572,7 +1575,7 @@
    {
     "path": "lib/core/methodList.js",
     "role": "core",
-    "responsibility": "methodList 模块，含 0 个顶层符号",
+    "responsibility": "列出核心类要批量生成的方法名",
     "key_symbols": [],
     "importance": 0.002366,
     "evidence": [
@@ -1586,7 +1589,7 @@
    {
     "path": "lib/platform/browser/classes/FormData.js",
     "role": "core",
-    "responsibility": "FormData 模块，含 0 个顶层符号",
+    "responsibility": "浏览器平台下转出内置表单类",
     "key_symbols": [],
     "importance": 0.002342,
     "evidence": [
@@ -1600,7 +1603,7 @@
    {
     "path": "lib/helpers/spread.js",
     "role": "core",
-    "responsibility": "* Syntactic sugar for invoking a function and expanding an array for…",
+    "responsibility": "把数组参数展开成多参回调",
     "key_symbols": [
      "and",
      "f",
@@ -1620,7 +1623,7 @@
    {
     "path": "lib/platform/browser/classes/Blob.js",
     "role": "core",
-    "responsibility": "Blob 模块，含 0 个顶层符号",
+    "responsibility": "浏览器平台下转出内置 Blob 类",
     "key_symbols": [],
     "importance": 0.002334,
     "evidence": [
@@ -1634,7 +1637,7 @@
    {
     "path": "lib/helpers/toURLEncodedForm.js",
     "role": "core",
-    "responsibility": "toURLEncodedForm 模块，含 1 个顶层符号",
+    "responsibility": "把对象转成表单编码字符串",
     "key_symbols": [
      "toURLEncodedForm"
     ],
@@ -1651,7 +1654,7 @@
    {
     "path": "lib/helpers/isAxiosError.js",
     "role": "core",
-    "responsibility": "* Determines whether the payload is an error thrown by Axios * *…",
+    "responsibility": "判断一个值是否为本库错误对象",
     "key_symbols": [
      "isAxiosError"
     ],
@@ -1668,7 +1671,7 @@
    {
     "path": "lib/core/setFormDataHeaders.js",
     "role": "core",
-    "responsibility": "* Apply the headers generated by a FormData implementation to the…",
+    "responsibility": "按策略把表单自带头部写进请求头",
     "key_symbols": [
      "setFormDataHeaders"
     ],
@@ -1685,7 +1688,7 @@
    {
     "path": "lib/helpers/shouldBypassProxy.js",
     "role": "data",
-    "responsibility": "* Canonicalize an IPv4 address written in shorthand, octal, or hex…",
+    "responsibility": "按 no_proxy 规则判断是否绕过代理",
     "key_symbols": [
      "shouldBypassProxy"
     ],
@@ -1702,7 +1705,7 @@
    {
     "path": "lib/core/InterceptorManager.js",
     "role": "core",
-    "responsibility": "* Add a new interceptor to the stack * * @param {Function} fulfilled…",
+    "responsibility": "拦截器的注册、注销与有效项整理",
     "key_symbols": [
      "countHandlers",
      "trimHandlers",
@@ -1724,7 +1727,7 @@
    {
     "path": "lib/core/dispatchRequest.js",
     "role": "core",
-    "responsibility": "* Throws a `CanceledError` if cancellation has been requested. * *…",
+    "responsibility": "取消检查、数据转换后调用适配器",
     "key_symbols": [
      "throwIfCancellationRequested",
      "resolveClock",
@@ -1746,7 +1749,7 @@
    {
     "path": "lib/helpers/validator.js",
     "role": "core",
-    "responsibility": "* Transitional option validator * * @param {function|boolean?}…",
+    "responsibility": "配置项校验与弃用提示的统一入口",
     "key_symbols": [
      "validator",
      "transitional",
@@ -1767,7 +1770,7 @@
    {
     "path": "lib/helpers/trackStream.js",
     "role": "core",
-    "responsibility": "trackStream 模块，含 3 个顶层符号",
+    "responsibility": "按块读取流并累计已读字节数",
     "key_symbols": [
      "streamChunk",
      "readBytes",
@@ -1786,7 +1789,7 @@
    {
     "path": "index.d.ts",
     "role": "core",
-    "responsibility": "@deprecated Use `ContentTooLarge` instead.",
+    "responsibility": "对外类型声明：配置、响应与实例接口",
     "key_symbols": [
      "AxiosHeaders",
      "AxiosError",
@@ -1808,7 +1811,7 @@
    {
     "path": "lib/core/transformData.js",
     "role": "core",
-    "responsibility": "* Transform the data for a request or a response * * @param…",
+    "responsibility": "依次执行请求或响应转换函数链",
     "key_symbols": [
      "or",
      "transformData",
@@ -1827,7 +1830,7 @@
    {
     "path": "lib/helpers/composeSignals.js",
     "role": "core",
-    "responsibility": "composeSignals 模块，含 0 个顶层符号",
+    "responsibility": "把多个取消信号合成一个可监听信号",
     "key_symbols": [],
     "importance": 0.002197,
     "evidence": [
@@ -1841,7 +1844,7 @@
    {
     "path": "lib/helpers/AxiosTransformStream.js",
     "role": "core",
-    "responsibility": "AxiosTransformStream 模块，含 2 个顶层符号",
+    "responsibility": "限速与进度上报的转换流实现",
     "key_symbols": [
      "AxiosTransformStream",
      "transformNextChunk"
@@ -1859,7 +1862,7 @@
    {
     "path": "lib/core/createMultipartBody.js",
     "role": "core",
-    "responsibility": "createMultipartBody 模块，含 1 个顶层符号",
+    "responsibility": "生成多段表单请求体与边界字符串",
     "key_symbols": [
      "createMultipartBody"
     ],
@@ -1876,7 +1879,7 @@
    {
     "path": "lib/helpers/formDataToStream.js",
     "role": "core",
-    "responsibility": "formDataToStream 模块，含 1 个顶层符号",
+    "responsibility": "把表单数据转成可读流，逐段产出",
     "key_symbols": [
      "FormDataPart"
     ],
@@ -1893,7 +1896,7 @@
    {
     "path": "lib/helpers/Http2Sessions.js",
     "role": "core",
-    "responsibility": "Http2Sessions 模块，含 1 个顶层符号",
+    "responsibility": "复用 HTTP/2 会话，按来源缓存连接",
     "key_symbols": [
      "Http2Sessions"
     ],
@@ -1910,7 +1913,7 @@
    {
     "path": "docs/scripts/process-sponsors.js",
     "role": "core",
-    "responsibility": "* Special configuration for processing sponsor data.",
+    "responsibility": "文档脚本：拉取并整理赞助者数据",
     "key_symbols": [],
     "importance": 0.002145,
     "evidence": [
@@ -1924,7 +1927,7 @@
    {
     "path": "lib/helpers/fromDataURI.js",
     "role": "core",
-    "responsibility": "* Parse data uri to a Buffer or Blob * * @param {String} uri * @param…",
+    "responsibility": "把 data 地址还原成 Blob 或字节数据",
     "key_symbols": [
      "fromDataURI"
     ],
@@ -1941,7 +1944,7 @@
    {
     "path": "lib/helpers/isURLSameOrigin.js",
     "role": "core",
-    "responsibility": "isURLSameOrigin 模块，含 0 个顶层符号",
+    "responsibility": "判断地址与当前页面是否同源",
     "key_symbols": [],
     "importance": 0.002114,
     "evidence": [
@@ -1955,7 +1958,7 @@
    {
     "path": "examples/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 6 个顶层符号",
+    "responsibility": "示例目录的静态服务器与索引页",
     "key_symbols": [
      "listDirs",
      "getIndexTemplate",
@@ -1977,7 +1980,7 @@
    {
     "path": "rollup.config.js",
     "role": "util",
-    "responsibility": "rollup.config 模块，含 0 个顶层符号",
+    "responsibility": "打包配置：产出多种模块格式的构建物",
     "key_symbols": [],
     "importance": 0.002073,
     "evidence": [
@@ -1991,7 +1994,7 @@
    {
     "path": "scripts/benchmark-merge-config.js",
     "role": "util",
-    "responsibility": "benchmark-merge-config 模块，含 0 个顶层符号",
+    "responsibility": "配置合并的性能基准脚本",
     "key_symbols": [],
     "importance": 0.002073,
     "evidence": [
@@ -2005,7 +2008,7 @@
    {
     "path": "sandbox/server.js",
     "role": "entry",
-    "responsibility": "* Pipes a file to the HTTP response. * * @param {http.ServerResponse}…",
+    "responsibility": "沙箱服务端：转发接口与静态文件",
     "key_symbols": [
      "pipeFileToResponse",
      "handleApiRequest",
@@ -2024,7 +2027,7 @@
    {
     "path": "lib/helpers/ZlibHeaderTransformStream.js",
     "role": "core",
-    "responsibility": "ZlibHeaderTransformStream 模块，含 1 个顶层符号",
+    "responsibility": "修正压缩流头部，兼容 gzip 与 deflate",
     "key_symbols": [
      "ZlibHeaderTransformStream"
     ],
@@ -2041,7 +2044,7 @@
    {
     "path": "examples/network_enhanced.js",
     "role": "core",
-    "responsibility": "network_enhanced 模块，含 2 个顶层符号",
+    "responsibility": "示例：把网络错误翻译成友好提示",
     "key_symbols": [
      "enhanceNetworkError",
      "createEnhancedClient"
@@ -2059,7 +2062,7 @@
    {
     "path": "gulpfile.js",
     "role": "core",
-    "responsibility": "gulpfile 模块，含 2 个顶层符号",
+    "responsibility": "任务脚本：版本、贡献者与发布辅助",
     "key_symbols": [
      "getContributors",
      "$"
@@ -2077,7 +2080,7 @@
    {
     "path": "docs/.vitepress/theme/index.ts",
     "role": "core",
-    "responsibility": "index 模块，含 1 个顶层符号",
+    "responsibility": "文档主题入口：补全博客侧边栏",
     "key_symbols": [
      "fillBlogSidebar"
     ],
@@ -2094,7 +2097,7 @@
    {
     "path": "lib/helpers/callbackify.js",
     "role": "core",
-    "responsibility": "callbackify 模块，含 0 个顶层符号",
+    "responsibility": "把承诺接口包装成回调风格",
     "key_symbols": [],
     "importance": 0.002027,
     "evidence": [
@@ -2108,7 +2111,7 @@
    {
     "path": "docs/.vitepress/tokenizeSearchText.js",
     "role": "core",
-    "responsibility": "* Tokenize search text while preserving MiniSearch's default behavior…",
+    "responsibility": "文档搜索分词：中英文分别处理",
     "key_symbols": [
      "tokenizeSearchText"
     ],
@@ -2125,7 +2128,7 @@
    {
     "path": "eslint.config.js",
     "role": "util",
-    "responsibility": "/*.js'], linterOptions: { reportUnusedDisableDirectives: 'off' },…",
+    "responsibility": "代码风格与静态检查规则配置",
     "key_symbols": [],
     "importance": 0.002008,
     "evidence": [
@@ -2139,7 +2142,7 @@
    {
     "path": "vitest.config.js",
     "role": "util",
-    "responsibility": "/*.test.js'], setupFiles: [], }, }, { test: { name: 'browser',…",
+    "responsibility": "单元测试运行器配置",
     "key_symbols": [],
     "importance": 0.002004,
     "evidence": [
@@ -2153,7 +2156,7 @@
    {
     "path": "lib/helpers/deprecatedMethod.js",
     "role": "core",
-    "responsibility": "* Supply a warning to the developer that a method they are using *…",
+    "responsibility": "生成带迁移提示的弃用方法包装",
     "key_symbols": [
      "deprecatedMethod"
     ],
@@ -2170,7 +2173,7 @@
    {
     "path": "examples/get/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 0 个顶层符号",
+    "responsibility": "GET 示例的服务端处理函数",
     "key_symbols": [],
     "importance": 0.001962,
     "evidence": [
@@ -2184,7 +2187,7 @@
    {
     "path": "webpack.config.js",
     "role": "util",
-    "responsibility": "webpack.config 模块，含 1 个顶层符号",
+    "responsibility": "浏览器打包配置，含压缩变体",
     "key_symbols": [
      "generateConfig"
     ],
@@ -2201,7 +2204,7 @@
    {
     "path": "examples/abort-controller/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 0 个顶层符号",
+    "responsibility": "中止示例的服务端处理函数",
     "key_symbols": [],
     "importance": 0.001951,
     "evidence": [
@@ -2215,7 +2218,7 @@
    {
     "path": "docs/.vitepress/theme/formatPostDate.js",
     "role": "util",
-    "responsibility": "formatPostDate 模块，含 1 个顶层符号",
+    "responsibility": "文档博客的日期格式化函数",
     "key_symbols": [
      "formatPostDate"
     ],
@@ -2232,7 +2235,7 @@
    {
     "path": "sandbox/client.js",
     "role": "core",
-    "responsibility": "client 模块，含 2 个顶层符号",
+    "responsibility": "沙箱前端：调用接口并打印结果",
     "key_symbols": [
      "handleSuccess",
      "handleFailure"
@@ -2250,7 +2253,7 @@
    {
     "path": "examples/post/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 0 个顶层符号",
+    "responsibility": "POST 示例的服务端处理函数",
     "key_symbols": [],
     "importance": 0.001917,
     "evidence": [
@@ -2264,7 +2267,7 @@
    {
     "path": "lib/platform/browser/index.js",
     "role": "core",
-    "responsibility": "index 模块，含 0 个顶层符号",
+    "responsibility": "浏览器平台能力表：类与协议支持",
     "key_symbols": [],
     "importance": 0.001915,
     "evidence": [
@@ -2278,7 +2281,7 @@
    {
     "path": "examples/postMultipartFormData/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 0 个顶层符号",
+    "responsibility": "多段表单示例的服务端处理函数",
     "key_symbols": [],
     "importance": 0.001898,
     "evidence": [
@@ -2292,7 +2295,7 @@
    {
     "path": "examples/upload/server.js",
     "role": "entry",
-    "responsibility": "server 模块，含 0 个顶层符号",
+    "responsibility": "上传示例的服务端处理函数",
     "key_symbols": [],
     "importance": 0.001896,
     "evidence": [
@@ -2306,7 +2309,7 @@
    {
     "path": "lib/env/classes/FormData.js",
     "role": "core",
-    "responsibility": "FormData 模块，含 0 个顶层符号",
+    "responsibility": "按环境择用内置或自带的表单类",
     "key_symbols": [],
     "importance": 0.001842,
     "evidence": [
@@ -2320,7 +2323,7 @@
    {
     "path": "lib/helpers/null.js",
     "role": "core",
-    "responsibility": "null 模块，含 0 个顶层符号",
+    "responsibility": "占位模块：打包时替换为空实现",
     "key_symbols": [],
     "importance": 0.001801,
     "evidence": [
