@@ -1,7 +1,7 @@
 # 搬迁到 Qoder · 执行总纲
 
 > **Sites 公开链接**：<https://repotour-kqnwk5p977n.qoder.zone>（2026-11-24 已发布，访问范围=任何人都可访问；匿名 HTTP 200 + 全部静态资源 200 已验证，证据见 handoff/evidence/P0-05/06 及 P0-check-*）
-> **进度**：P0 骨架已发布 ✅ → P1 导览+代码证据已发布 ✅ → P2 架构图/模块地图/上手任务已发布并线上验证 ✅（2026-11-24，新 bundle index-hBH0xScG.js，架构图 18 节点 17/17 边、模块 32 卡筛选搜索、任务打卡 localStorage 持久化、手机四页签无溢出，证据 P2-01~09）→ 下一步 P3 模型重写讲解文案
+> **进度**：P0 ✅ → P1 ✅ → P2 ✅ → **P3 文案重写已完成并通过本地验收**（90 处导览文案 / 152 条职责 / 31 条节点说明 / 27 条任务文案；files 全文、{path,start,end}、order、graph.edges 程序比对零改动；渲染 40/40、32/32、108/108 全过，证据 P3-01~10，提交 7b7d580）→ **待发布**（关机导致 Qoder 关闭；恢复后发布并修正首页页脚过时文案）→ 下一步 P4 在线生成
 > **截止**：2026-11-30 18:00 ｜ **赛道**：StudyHack 学习科研
 > 官方细则与缺口审计见 [SUBMISSION-CHECKLIST.md](SUBMISSION-CHECKLIST.md)
 
@@ -79,3 +79,4 @@
 1. 打开 Qoder CN，用**已下单 Pro 的阿里云账号**登录（没下单先去领券，见 CHECKLIST 第 4 节）
 2. 「打开文件夹」选 `C:\Users\才\Documents\Codex\2026-11-21\w-ya\outputs\repotour`
 3. 打开 `handoff/PROMPTS.md`，复制 **P0** 粘进「站点」新任务，发送
+
