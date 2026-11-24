@@ -1,5 +1,9 @@
 # RepoTour · 码途 —— 仓库导游
 
+> 🚨 **提交前必读**：[docs/SUBMISSION-CHECKLIST.md](docs/SUBMISSION-CHECKLIST.md)
+> 官方硬要求 = 用 Qoder 开发 + 部署到 Qoder Sites 公网链接 + 天池论坛作品帖，**11-30 18:00 截止**。
+> 官方评分明确「技术复杂度不计分」，重心放在「点开就能用」。
+
 > 2026 Qoder 高校创造力大赛参赛作品。丢进任意 GitHub 仓库链接，AI 生成一条可交互的
 > "新人导览路线"：架构总览 → 模块讲解 → 沿真实调用链读源码 → 分级上手任务。
 
