@@ -90,3 +90,38 @@
 
 
 
+
+---
+
+## 文档索引
+
+**比赛相关（先看这些）**
+
+| 文档 | 用途 |
+|---|---|
+| [docs/SUBMISSION-CHECKLIST.md](docs/SUBMISSION-CHECKLIST.md) | 官方细则对照、缺口审计、提交前终检清单 |
+| [docs/QODER-MIGRATION.md](docs/QODER-MIGRATION.md) | 搬迁到 Qoder 的执行总纲、环境状态、六天倒排 |
+| [docs/TEAMMATE-TASKS.md](docs/TEAMMATE-TASKS.md) | 队友逐日工作清单与交付物 |
+| [handoff/PROMPTS.md](handoff/PROMPTS.md) | P0–P5 可直接粘贴给 Qoder 的提示词 |
+| [handoff/SPEC.md](handoff/SPEC.md) | 站点版产品与技术规格（Qoder 主要输入） |
+| [handoff/seed/](handoff/seed/) | 三个仓库的真实导览种子数据，自包含可离线渲染 |
+
+**提交材料（队友填写）**
+
+| 文档 | 用途 |
+|---|---|
+| [submission/POST-DRAFT.md](submission/POST-DRAFT.md) | 天池作品帖草稿，五部分骨架已搭好 |
+| [submission/BLIND-TEST.md](submission/BLIND-TEST.md) | 盲测脚本与记录表 |
+| [submission/SOCIAL.md](submission/SOCIAL.md) | 社交传播奖分享帖模板 |
+
+**原型开发文档**
+
+| 文档 | 用途 |
+|---|---|
+| [docs/design.md](docs/design.md) | 原始设计文档（本地 Python + React 原型） |
+| [docs/API.md](docs/API.md) | 原型后端 API 契约 |
+| [docs/GIT-COLLAB.md](docs/GIT-COLLAB.md) | Git 协作流程（含零基础步骤） |
+| [frontend/README.md](frontend/README.md) | 原型前端说明 |
+
+> ⚠️ 原型（`backend/` + `frontend/`）用于验证算法与数据结构，**不作为参赛提交形态**。
+> 参赛提交的是 Qoder Sites 上的公开站点，见搬迁总纲。
