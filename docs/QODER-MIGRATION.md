@@ -1,6 +1,7 @@
 # 搬迁到 Qoder · 执行总纲
 
 > **Sites 公开链接**：<https://repotour-kqnwk5p977n.qoder.zone>（2026-11-24 已发布，访问范围=任何人都可访问；匿名 HTTP 200 + 全部静态资源 200 已验证，证据见 handoff/evidence/P0-05/06 及 P0-check-*）
+> **进度**：P0 骨架已发布 ✅ → P1 导览+代码证据已发布并线上验证 ✅（2026-11-24，新 bundle index-DhoPETw3.js，三个 seed/*.json 均 200，证据 P1-01~08）→ 下一步 P2 架构图/模块地图/上手任务
 > **截止**：2026-11-30 18:00 ｜ **赛道**：StudyHack 学习科研
 > 官方细则与缺口审计见 [SUBMISSION-CHECKLIST.md](SUBMISSION-CHECKLIST.md)
 
