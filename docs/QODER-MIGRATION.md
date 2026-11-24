@@ -1,6 +1,6 @@
 # 搬迁到 Qoder · 执行总纲
 
-> **Sites 公开链接**：`待 P0 完成后填在这里`
+> **Sites 公开链接**：<https://repotour-kqnwk5p977n.qoder.zone>（2026-11-24 已发布，访问范围=任何人都可访问；匿名 HTTP 200 + 全部静态资源 200 已验证，证据见 handoff/evidence/P0-05~08）
 > **截止**：2026-11-30 18:00 ｜ **赛道**：StudyHack 学习科研
 > 官方细则与缺口审计见 [SUBMISSION-CHECKLIST.md](SUBMISSION-CHECKLIST.md)
 
