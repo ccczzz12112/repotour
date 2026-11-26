@@ -6,9 +6,11 @@ import ArchPage from "./pages/ArchPage";
 import ModulesPage from "./pages/ModulesPage";
 import TasksPage from "./pages/TasksPage";
 import CodeViewer, { type CodeTarget } from "./components/CodeViewer";
-import { isSeedKey, loadSeed, SEEDS, type SeedData, type SeedKey } from "./lib/seed";
+import { type SeedData } from "./lib/seed";
+import { isKnownSlug, loadRepo, repoLabel } from "./lib/repo";
+import { isOnlineSlug } from "./lib/pipeline/store";
 
-const DEFAULT_SLUG: SeedKey = "pallets-click";
+const DEFAULT_SLUG = "pallets-click";
 
 const TABS = [
   { value: "route", label: "导览路线" },
@@ -21,17 +23,17 @@ type TabValue = (typeof TABS)[number]["value"];
 
 type Route =
   | { view: "home" }
-  | { view: "tab"; tab: Exclude<TabValue, "route">; slug: SeedKey }
-  | { view: "tour"; slug: SeedKey; order: number };
+  | { view: "tab"; tab: Exclude<TabValue, "route">; slug: string }
+  | { view: "tour"; slug: string; order: number };
 
 function parseHash(hash: string): Route {
   const raw = decodeURIComponent(hash.replace(/^#\/?/, ""));
   const [head, arg, num] = raw.split("/");
-  if (head === "tour" && arg && isSeedKey(arg)) {
+  if (head === "tour" && arg && isKnownSlug(arg)) {
     return { view: "tour", slug: arg, order: Number(num) || 0 };
   }
   if (head === "arch" || head === "modules" || head === "tasks") {
-    return { view: "tab", tab: head, slug: arg && isSeedKey(arg) ? arg : DEFAULT_SLUG };
+    return { view: "tab", tab: head, slug: arg && isKnownSlug(arg) ? arg : DEFAULT_SLUG };
   }
   return { view: "home" };
 }
@@ -52,7 +54,7 @@ const TRIGGER_CLASS =
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
-  const [seed, setSeed] = useState<{ slug: SeedKey; data: SeedData } | null>(null);
+  const [seed, setSeed] = useState<{ slug: string; data: SeedData } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState<CodeTarget | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -79,12 +81,12 @@ export default function App() {
     let alive = true;
     setError(null);
     setCode(null);
-    loadSeed(activeSlug)
+    loadRepo(activeSlug)
       .then((data) => {
         if (alive) setSeed({ slug: activeSlug, data });
       })
       .catch((err: unknown) => {
-        if (alive) setError(err instanceof Error ? err.message : "种子数据加载失败");
+        if (alive) setError(err instanceof Error ? err.message : "导览数据加载失败");
       });
     return () => {
       alive = false;
@@ -95,8 +97,8 @@ export default function App() {
   const stats = seed?.data.result.stats;
   const needsSeed = route.view !== "home";
   const ready = needsSeed && seed?.slug === activeSlug && !error;
-  const repo = activeSlug ? SEEDS[activeSlug].repo : "";
-  const pickRepo = (slug: SeedKey) => {
+  const repo = activeSlug ? repoLabel(activeSlug) : "";
+  const pickRepo = (slug: string) => {
     if (route.view === "tab") navigate({ view: "tab", tab: route.tab, slug });
     else if (route.view === "tour") navigate({ view: "tour", slug, order: 0 });
   };
@@ -169,7 +171,7 @@ export default function App() {
         <main className="flex-1 py-[calc(1.25rem*var(--site-space,1))] sm:py-[calc(1.75rem*var(--site-space,1))]">
           {route.view === "home" && (
             <TourRoutePage
-              loadedRepo={seed ? SEEDS[seed.slug].repo : null}
+              loadedRepo={seed ? repoLabel(seed.slug) : null}
               onPick={(slug) => navigate({ view: "tour", slug, order: 0 })}
             />
           )}
@@ -178,7 +180,7 @@ export default function App() {
             <div className="rt-card p-[calc(1.5rem*var(--site-space,1))]">
               {error ? (
                 <>
-                  <h2 className="rt-panel-title">种子数据加载失败</h2>
+                  <h2 className="rt-panel-title">导览数据加载失败</h2>
                   <p className="rt-hint mt-[calc(0.5rem*var(--site-space,1))]">{error}</p>
                   <button
                     type="button"
@@ -190,9 +192,11 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <h2 className="rt-panel-title">正在载入预烘焙种子…</h2>
+                  <h2 className="rt-panel-title">
+                    {activeSlug && isOnlineSlug(activeSlug) ? "正在载入本机保存的在线结果…" : "正在载入预烘焙种子…"}
+                  </h2>
                   <p className="rt-hint mt-[calc(0.5rem*var(--site-space,1))]">
-                    {repo} · 数据随站点一起发布，不请求外网。
+                    {repo} · {activeSlug && isOnlineSlug(activeSlug) ? "结果存在本机浏览器，不请求外网。" : "数据随站点一起发布，不请求外网。"}
                   </p>
                   <div className="rt-skeleton mt-[calc(1rem*var(--site-space,1))]" aria-hidden>
                     <span className="rt-bar" style={{ width: "40%" }} />
@@ -230,8 +234,8 @@ export default function App() {
 
         <footer className="border-t border-border py-[calc(1rem*var(--site-space,1))]">
           <p className="rt-hint">
-            当前版本：导览路线、架构图、模块地图、上手任务全部接入预烘焙种子（pallets/click、psf/requests、axios/axios），
-            依赖边与行号来自真实静态解析，讲解文案已按真实代码逐站重写；输入任意仓库链接在线生成待接入。
+            当前版本：预烘焙示例（pallets/click、psf/requests、axios/axios）离线可看；输入任意公开 GitHub 仓库可在线生成——
+            依赖边与行号来自浏览器内真实静态解析，模型只补讲解文案，每条引用程序校验后才展示。
           </p>
         </footer>
       </div>

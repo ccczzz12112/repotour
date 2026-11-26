@@ -3,13 +3,13 @@ import GraphView from "../components/GraphView";
 import RepoSwitch from "../components/RepoSwitch";
 import type { CodeTarget } from "../components/CodeViewer";
 import { layerMeta } from "../lib/roles";
-import { lineCount, type GraphNode, type SeedData, type SeedKey } from "../lib/seed";
+import { lineCount, type GraphNode, type SeedData } from "../lib/seed";
 
 type ArchPageProps = {
   seed: SeedData;
-  slug: SeedKey;
+  slug: string;
   repo: string;
-  onPickRepo: (slug: SeedKey) => void;
+  onPickRepo: (slug: string) => void;
   onOpenCode: (target: CodeTarget) => void;
 };
 

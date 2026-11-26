@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import RepoSwitch from "../components/RepoSwitch";
 import type { CodeTarget } from "../components/CodeViewer";
 import { levelMeta } from "../lib/roles";
-import { lineCount, tasksOf, type SeedData, type SeedKey } from "../lib/seed";
+import { lineCount, tasksOf, type SeedData } from "../lib/seed";
 
 type TasksPageProps = {
   seed: SeedData;
-  slug: SeedKey;
+  slug: string;
   repo: string;
-  onPickRepo: (slug: SeedKey) => void;
+  onPickRepo: (slug: string) => void;
   onOpenCode: (target: CodeTarget) => void;
 };
 

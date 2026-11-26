@@ -1,28 +1,38 @@
 import { SEEDS, type SeedKey } from "../lib/seed";
+import { listRecent } from "../lib/pipeline/store";
 
 type RepoSwitchProps = {
-  value: SeedKey;
-  onPick: (slug: SeedKey) => void;
+  value: string;
+  onPick: (slug: string) => void;
 };
 
-const KEYS = Object.keys(SEEDS) as SeedKey[];
+const SEED_KEYS = Object.keys(SEEDS) as SeedKey[];
 
 export default function RepoSwitch({ value, onPick }: RepoSwitchProps) {
+  const recent = listRecent();
+  const entries: { slug: string; repo: string; note: string }[] = [
+    ...SEED_KEYS.map((key) => ({ slug: key as string, repo: SEEDS[key].repo, note: SEEDS[key].note })),
+    ...recent.map((e) => ({
+      slug: e.slug,
+      repo: e.repo,
+      note: `在线生成 · ${e.modelUsed ? "模型讲解" : "静态分析"}`,
+    })),
+  ];
   return (
-    <div className="rt-repos" role="group" aria-label="选择预烘焙仓库">
-      {KEYS.map((key) => {
-        const on = key === value;
+    <div className="rt-repos" role="group" aria-label="选择仓库">
+      {entries.map((item) => {
+        const on = item.slug === value;
         return (
           <button
-            key={key}
+            key={item.slug}
             type="button"
             className={on ? "rt-repo rt-repo-on" : "rt-repo"}
             aria-pressed={on}
-            onClick={() => onPick(key)}
-            title={SEEDS[key].note}
+            onClick={() => onPick(item.slug)}
+            title={item.note}
           >
             <span className="rt-repo-dot" aria-hidden />
-            <span className="font-mono">{SEEDS[key].repo}</span>
+            <span className="font-mono">{item.repo}</span>
           </button>
         );
       })}
